@@ -1,421 +1,519 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0d12" />
-  <title>Tap Runner – Mobile</title>
-  <style>
-    /* Podstawy: nic globalnie nie blokujemy */
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #0b0d12;
-      color: #fff;
-      font-family: -apple-system, system-ui, Segoe UI, Roboto, Ubuntu, sans-serif;
-      -webkit-user-select: none;
-      user-select: none;
-      overscroll-behavior: none;
-    }
-    /* Płótno gry – tylko tu wyłączamy gesty (żeby nie przewijało ekranu) */
-    #game {
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      background: radial-gradient(1200px 800px at 50% 10%, #161a28 0%, #0b0d12 60%);
-      touch-action: none;             /* ważne dla iOS/Android */
-      -webkit-touch-callout: none;
-    }
-    /* Szklane „pigułki” UI – w pełni klikalne */
-    .ui {
-      position: fixed;
-      top: calc(env(safe-area-inset-top) + 10px);
-      left: calc(env(safe-area-inset-left) + 10px);
-      right: calc(env(safe-area-inset-right) + 10px);
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      z-index: 5;
-      pointer-events: none; /* całość nie łapie, ale same pigułki tak */
-    }
-    .pill {
-      pointer-events: auto; /* przyciski działają na telefonie */
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      font-weight: 700;
-      text-shadow: 0 2px 8px rgba(0,0,0,.45);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn { cursor: pointer; transition: transform .08s ease; }
-    .btn:active { transform: scale(.96); }
-
-    /* Overlays (start/koniec/pauza) – klikalne */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      background: radial-gradient(1200px 800px at 50% 10%, rgba(255,255,255,.07), transparent 60%);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-      z-index: 10;
-    }
-    .hidden { display: none; }
-    .card {
-      width: min(92vw, 520px);
-      background: rgba(23,26,38,.9);
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,.5);
-    }
-    h1 { margin: 6px 0 2px; font-size: clamp(24px, 5vw, 36px); }
-    p { margin: 8px 0 0; opacity: .9; }
-    .big {
-      margin-top: 14px;
-      width: 100%;
-      padding: 16px 20px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-weight: 800;
-      letter-spacing: .6px;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #67e8f9, #a78bfa, #f472b6);
-      color: #0f1116;
-      box-shadow: 0 10px 30px rgba(164,120,250,.25);
-    }
-    .ghost {
-      margin-top: 10px;
-      background: transparent;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.25);
-      box-shadow: none;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<title>Crystal Farm 3D</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#0b0d12;color:#fff;font-family:-apple-system,system-ui,Segoe UI,Roboto,Ubuntu,sans-serif;overscroll-behavior:none}
+  #app{position:fixed;inset:0}
+  canvas{display:block;width:100vw;height:100vh}
+  /* HUD */
+  .hud{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:calc(env(safe-area-inset-left)+10px);right:calc(env(safe-area-inset-right)+10px);display:flex;gap:8px;align-items:center;justify-content:space-between;z-index:5;pointer-events:none}
+  .pill{pointer-events:auto;display:inline-flex;gap:8px;align-items:center;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);font-weight:700;letter-spacing:.3px;text-shadow:0 2px 8px rgba(0,0,0,.45)}
+  .stats{display:flex;gap:8px}
+  .hearts{display:flex;gap:6px}
+  .heart{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff7aa2,#e11d48)}
+  /* On-screen controls */
+  .controls{position:fixed;inset:0;pointer-events:none;z-index:6}
+  .stickArea{position:absolute;bottom:calc(env(safe-area-inset-bottom)+18px);left:calc(env(safe-area-inset-left)+18px);width:160px;height:160px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:auto;touch-action:none}
+  .stick{position:absolute;left:50%;top:50%;width:72px;height:72px;transform:translate(-50%,-50%);border-radius:999px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35)}
+  .btnDash{position:absolute;right:calc(env(safe-area-inset-right)+18px);bottom:calc(env(safe-area-inset-bottom)+18px);width:120px;height:120px;border-radius:24px;background:linear-gradient(90deg,#67e8f9,#a78bfa,#f472b6);border:none;box-shadow:0 12px 36px rgba(164,120,250,.35);pointer-events:auto;touch-action:manipulation;font-weight:900;color:#0b0d12;letter-spacing:.5px}
+  .btnDash:active{transform:scale(.98)}
+  /* overlays */
+  .overlay{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(1200px 800px at 50% 10%,rgba(255,255,255,.07),transparent 60%);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);z-index:10}
+  .card{width:min(92vw,560px);background:rgba(23,26,38,.9);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:20px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+  .big{margin-top:12px;width:100%;padding:14px 16px;border-radius:12px;border:none;font-weight:800;letter-spacing:.6px;text-transform:uppercase;background:linear-gradient(90deg,#67e8f9,#a78bfa,#f472b6);color:#0b0d12;box-shadow:0 10px 30px rgba(164,120,250,.25)}
+  .ghost{margin-top:10px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);box-shadow:none}
+  .hidden{display:none}
+  /* tips */
+  .tip{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom)+10px);transform:translateX(-50%);padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:7;opacity:0;transition:opacity .25s, transform .25s}
+  .tip.show{opacity:1;transform:translate(-50%,-4px)}
+</style>
 </head>
 <body>
-  <canvas id="game" aria-label="Tap Runner – Mobile"></canvas>
+<div id="app"></div>
 
-  <div class="ui">
-    <div class="pill" id="score">Punkty: 0</div>
-    <div class="pill">Rekord: <span id="best">0</span></div>
-    <div class="pill btn" id="pauseBtn" role="button" aria-label="Pauza">⏸️ Pauza</div>
+<!-- HUD -->
+<div class="hud" id="hud">
+  <div class="pill">💎 Monety: <span id="coins">0</span></div>
+  <div class="stats">
+    <div class="pill">🌱 Zasiej (50)</div>
+    <div class="pill">⏱️ Wzrost: 12s</div>
+    <div class="pill">⚡ Dasz</div>
   </div>
+  <div class="pill hearts" id="hearts"></div>
+</div>
 
-  <!-- START / CONTINUE -->
-  <div class="overlay" id="startOverlay">
-    <div class="card">
-      <h1>🏃‍♂️ Tap Runner</h1>
-      <p>Dotknij ekranu, by skakać. Zbieraj 💎, unikaj przeszkód. Działa „tapnij, by kontynuować”.</p>
-      <button class="big" id="playBtn">▶️ Start</button>
-      <button class="big ghost" id="addBtn">➕ Dodaj do ekranu początkowego</button>
-    </div>
-  </div>
+<!-- Controls -->
+<div class="controls">
+  <div class="stickArea" id="stickArea"><div class="stick" id="stick"></div></div>
+  <button class="btnDash" id="btnDash" aria-label="Dash/Atak">DASH</button>
+</div>
 
-  <!-- GAME OVER -->
-  <div class="overlay hidden" id="overOverlay">
-    <div class="card">
-      <h1>💥 Koniec gry!</h1>
-      <p>Wynik: <b id="finalScore">0</b> • Rekord: <b id="finalBest">0</b></p>
-      <button class="big" id="againBtn">🔁 Zagraj ponownie</button>
-    </div>
+<!-- Overlays -->
+<div class="overlay" id="startOv">
+  <div class="card">
+    <h1>🌌 Crystal Farm 3D</h1>
+    <p>Uprawiaj kryształy na wyspie, zbieraj monety i odpieraj ataki slimów.<br>Lewy kciuk – joystick, prawy – DASH (atak).</p>
+    <button class="big" id="playBtn">▶️ Zaczynamy</button>
+    <button class="big ghost" id="addBtn">➕ Dodaj do ekranu początkowego</button>
   </div>
+</div>
+
+<div class="overlay hidden" id="gameOver">
+  <div class="card">
+    <h1>💥 Koniec gry</h1>
+    <p>Wynik (monety): <b id="finalScore">0</b></p>
+    <button class="big" id="againBtn">🔁 Jeszcze raz</button>
+  </div>
+</div>
+
+<div class="tip" id="tip">Dotknij płytki, aby zasadzić / zebrać</div>
+
+<!-- Three.js -->
+<script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
 
 <script>
 (() => {
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+  // ====== Basics ======
+  const app = document.getElementById('app');
+  const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  app.appendChild(renderer.domElement);
 
-  // UI
-  const startOv = document.getElementById('startOverlay');
-  const overOv  = document.getElementById('overOverlay');
-  const playBtn = document.getElementById('playBtn');
-  const againBtn= document.getElementById('againBtn');
-  const pauseBtn= document.getElementById('pauseBtn');
-  const scoreEl = document.getElementById('score');
-  const bestEl  = document.getElementById('best');
-  const addBtn  = document.getElementById('addBtn');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b0d12);
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 200);
+  camera.position.set(0, 8, 12);
 
-  // Rozdzielczość i dopasowanie pod ekran + notcha
-  let DPR = Math.min(2, window.devicePixelRatio || 1);
-  let W=0, H=0, lastTs=0;
+  const hemi = new THREE.HemisphereLight(0xa3baff, 0x1b1f2a, 0.8);
+  scene.add(hemi);
+  const dir = new THREE.DirectionalLight(0xffffff, 1.2);
+  dir.position.set(6, 10, 4);
+  dir.castShadow = true;
+  dir.shadow.mapSize.set(2048,2048);
+  dir.shadow.camera.near = 1; dir.shadow.camera.far = 40;
+  scene.add(dir);
 
-  function resize() {
-    DPR = Math.min(2, window.devicePixelRatio || 1);
-    W = Math.floor(window.innerWidth * DPR);
-    H = Math.floor(window.innerHeight * DPR);
-    canvas.width = W;
-    canvas.height = H;
+  // Subtle fog for depth
+  scene.fog = new THREE.FogExp2(0x0b0d12, 0.035);
+
+  // ====== Island ======
+  const island = new THREE.Group();
+  scene.add(island);
+
+  const islandTopGeo = new THREE.CircleGeometry(8, 64);
+  const islandTopMat = new THREE.MeshStandardMaterial({ color:0x18212f, roughness:0.85, metalness:0.05 });
+  const islandTop = new THREE.Mesh(islandTopGeo, islandTopMat);
+  islandTop.rotation.x = -Math.PI/2;
+  islandTop.receiveShadow = true;
+  island.add(islandTop);
+
+  // Rim (sides)
+  const rimGeo = new THREE.CylinderGeometry(8, 7.5, 2, 64, 1, true);
+  const rimMat = new THREE.MeshStandardMaterial({ color:0x0e1522, roughness:0.9, metalness:0.05, side:THREE.DoubleSide });
+  const rim = new THREE.Mesh(rimGeo, rimMat);
+  rim.position.y = -1;
+  rim.receiveShadow = true; rim.castShadow = true;
+  island.add(rim);
+
+  // Subtle stars plane below
+  const starGeo = new THREE.PlaneGeometry(80,80);
+  const starMat = new THREE.MeshBasicMaterial({ color:0x0a0c12 });
+  const star = new THREE.Mesh(starGeo, starMat);
+  star.rotation.x = -Math.PI/2; star.position.y = -2.1;
+  scene.add(star);
+
+  // ====== Grid tiles for farming ======
+  const tiles = [];
+  const tileSize = 1.4;
+  const grid = 5; // 5x5 in the center
+  const tileGeo = new THREE.BoxGeometry(tileSize, 0.15, tileSize);
+  const tileMatEmpty = new THREE.MeshStandardMaterial({ color:0x203048, roughness:0.9, metalness:0.05 });
+  const tileMatGrowing = new THREE.MeshStandardMaterial({ color:0x2e4b6d, roughness:0.75, metalness:0.1, emissive:0x0a2238, emissiveIntensity:0.2 });
+  const tileMatMature = new THREE.MeshStandardMaterial({ color:0x3b7bb0, roughness:0.65, metalness:0.2, emissive:0x2aa9ff, emissiveIntensity:0.35 });
+
+  for (let x = -Math.floor(grid/2); x <= Math.floor(grid/2); x++) {
+    for (let z = -Math.floor(grid/2); z <= Math.floor(grid/2); z++) {
+      const t = new THREE.Mesh(tileGeo, tileMatEmpty.clone());
+      t.position.set(x* (tileSize+0.2), 0.08, z*(tileSize+0.2));
+      t.castShadow = false; t.receiveShadow = true;
+      island.add(t);
+      tiles.push({
+        mesh:t, state:'empty', timer:0, growTime:12, crystal:null
+      });
+    }
   }
-  window.addEventListener('resize', resize, { passive: true });
-  resize();
 
-  // Stan gry
-  const S = {
-    running:false, paused:false, t:0, score:0, best:Number(localStorage.getItem('tr_best')||0),
-    speed:380, gravity:1650, jump:560, holdMs:160
+  // ====== Player ======
+  const playerGeo = new THREE.SphereGeometry(0.5, 32, 32);
+  const playerMat = new THREE.MeshStandardMaterial({
+    color:0x9bd8ff, roughness:0.2, metalness:0.6, emissive:0x86bfff, emissiveIntensity:0.2
+  });
+  const player = new THREE.Mesh(playerGeo, playerMat);
+  player.castShadow = true;
+  player.position.set(0, 0.6, 4);
+  island.add(player);
+
+  // Simple eyes (quad) for a cute look
+  const eyeGeo = new THREE.PlaneGeometry(0.12, 0.12);
+  const eyeMat = new THREE.MeshBasicMaterial({ color:0x0a0c12, side:THREE.DoubleSide });
+  const eyeL = new THREE.Mesh(eyeGeo, eyeMat), eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+  eyeL.position.set(-0.18, 0.05, 0.48); eyeR.position.set(0.18, 0.05, 0.48);
+  player.add(eyeL); player.add(eyeR);
+
+  // ====== Enemies (slimes) ======
+  const enemies = [];
+  const enemyGeo = new THREE.SphereGeometry(0.45, 24, 24);
+  const enemyMat = new THREE.MeshStandardMaterial({ color:0xf472b6, roughness:0.35, metalness:0.3, emissive:0xff7acb, emissiveIntensity:0.25 });
+
+  function spawnEnemy() {
+    const angle = Math.random()*Math.PI*2;
+    const r = 6.8;
+    const e = new THREE.Mesh(enemyGeo, enemyMat.clone());
+    e.castShadow = true;
+    e.position.set(Math.cos(angle)*r, 0.5, Math.sin(angle)*r);
+    e.userData = { speed: 1.2 + Math.random()*0.6, alive:true };
+    island.add(e);
+    enemies.push(e);
+  }
+
+  // ====== Crystals ======
+  function mkCrystal(size=0.2, color=0x67e8f9) {
+    const g = new THREE.OctahedronGeometry(size, 0);
+    const m = new THREE.MeshStandardMaterial({ color, roughness:0.2, metalness:0.8, emissive:color, emissiveIntensity:0.4 });
+    const c = new THREE.Mesh(g, m);
+    c.castShadow = true;
+    return c;
+  }
+
+  // ====== Game State ======
+  const state = {
+    coins: Number(localStorage.getItem('cf3d_coins') || 0),
+    hearts: 3,
+    dashCD: 0,
+    dashing: false,
+    dashTime: 0,
+    invuln: 0,
+    waveTimer: 4,
+    running: false
   };
-  bestEl.textContent = S.best;
 
-  // Obiekty
-  const player = { x:0, y:0, w:44, h:44, vy:0, grounded:true, spin:0 };
-  const floor  = { y:0, h:18 };
-  const obs = [], gems = [];
-
-  // Wejście – tylko na canvasie blokujemy gesty (żeby nie przewijać)
-  let pressing=false, pressStart=0;
-
-  function attachCanvasControls() {
-    // pointer events działają i na dotyk, i na mysz
-    const onDown = (e) => {
-      e.preventDefault(); // tylko na canvasie
-      if (!S.running) return;
-      pressing = true; pressStart = performance.now();
-      if (player.grounded) { player.vy = -S.jump; player.grounded = false; }
-    };
-    const onUp = (e) => { pressing = false; };
-
-    canvas.addEventListener('pointerdown', onDown, { passive:false });
-    canvas.addEventListener('pointerup', onUp, { passive:true });
-    canvas.addEventListener('pointercancel', onUp, { passive:true });
-
-    // Start/continue tap na canvasie też działa:
-    canvas.addEventListener('click', () => {
-      if (!S.running) startGame(); // „tapnij, by kontynuować”
-    }, { passive:true });
-
-    // Klawiatura (na PC)
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp') onDown(e);
-      else if (e.code === 'KeyP') togglePause();
-    });
-    window.addEventListener('keyup', (e) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp') onUp(e);
-    });
-  }
-  attachCanvasControls();
-
-  // PWA „Add to Home Screen” (iOS: przez Safari – Udostępnij → Dodaj)
-  let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-  addBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    } else {
-      alert('Na iPhonie: Udostępnij → Dodaj do ekranu początkowego');
+  // HUD init
+  const coinsEl = document.getElementById('coins');
+  const heartsEl = document.getElementById('hearts');
+  const tipEl = document.getElementById('tip');
+  function updateHUD() {
+    coinsEl.textContent = state.coins|0;
+    heartsEl.innerHTML = '';
+    for (let i=0;i<state.hearts;i++) {
+      const h = document.createElement('div'); h.className='heart'; heartsEl.appendChild(h);
     }
-  });
+  }
+  updateHUD();
 
-  // Start / restart / pauza
-  playBtn.addEventListener('click', startGame, { passive:true });
-  againBtn.addEventListener('click', startGame, { passive:true });
-  pauseBtn.addEventListener('click', () => {
-    if (!S.running) return;
-    S.paused = !S.paused;
-    pauseBtn.textContent = S.paused ? '▶️ Wznów' : '⏸️ Pauza';
-    if (!S.paused) { lastTs = performance.now(); loop(0); }
-  }, { passive:true });
+  // ====== Controls: virtual joystick + dash ======
+  const stickArea = document.getElementById('stickArea');
+  const stick = document.getElementById('stick');
+  const btnDash = document.getElementById('btnDash');
 
-  function startGame() {
-    S.running = true; S.paused = false; S.t=0; S.score=0; S.speed=380;
-    player.w = player.h = Math.max(30, Math.min(W,H)*0.045);
-    player.x = W*0.22; floor.h = Math.max(12*DPR, Math.min(W,H)*0.015);
-    floor.y = H - floor.h; player.y = floor.y - player.h;
-    player.vy = 0; player.grounded = true; player.spin = 0;
-    obs.length=0; gems.length=0; lastTs=0;
-    startOv.classList.add('hidden'); overOv.classList.add('hidden');
-    loop(0);
+  let joy = { active:false, dx:0, dy:0, base:{x:0,y:0} };
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+
+  function stickToWorld(dx, dy) {
+    // dx,dy in [-1..1], map to XZ plane (island space)
+    return { x: dx, z: -dy };
   }
 
-  function gameOver() {
-    S.running = false;
-    document.getElementById('finalScore').textContent = Math.floor(S.score);
-    if (S.score > S.best) {
-      S.best = Math.floor(S.score);
-      localStorage.setItem('tr_best', S.best);
+  function onStickStart(e){
+    joy.active = true;
+    const t = e.touches ? e.touches[0] : e;
+    const r = stickArea.getBoundingClientRect();
+    joy.base.x = t.clientX; joy.base.y = t.clientY;
+    moveStick(t.clientX, t.clientY, r);
+  }
+  function onStickMove(e){
+    if(!joy.active) return;
+    const t = e.touches ? e.touches[0] : e;
+    const r = stickArea.getBoundingClientRect();
+    moveStick(t.clientX, t.clientY, r);
+  }
+  function onStickEnd(){ joy.active=false; joy.dx=0; joy.dy=0; stick.style.left='50%'; stick.style.top='50%'; }
+
+  function moveStick(cx, cy, r){
+    const dx = clamp((cx - (joy.base.x))/60, -1, 1);
+    const dy = clamp((cy - (joy.base.y))/60, -1, 1);
+    joy.dx = dx; joy.dy = dy;
+    const sx = clamp((cx - r.left) - r.width/2, -40, 40);
+    const sy = clamp((cy - r.top) - r.height/2, -40, 40);
+    stick.style.left = `calc(50% + ${sx}px)`;
+    stick.style.top  = `calc(50% + ${sy}px)`;
+  }
+
+  stickArea.addEventListener('pointerdown', onStickStart, {passive:false});
+  stickArea.addEventListener('pointermove', onStickMove, {passive:false});
+  window.addEventListener('pointerup', onStickEnd, {passive:true});
+  stickArea.addEventListener('touchstart', e=>e.preventDefault(), {passive:false});
+  stickArea.addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+
+  btnDash.addEventListener('click', doDash, {passive:true});
+
+  // ====== Raycaster for tile taps ======
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  function onTap(e){
+    // Ignore taps on UI areas (dash button / joystick)
+    const path = e.composedPath ? e.composedPath() : [];
+    if (path.includes(btnDash) || path.includes(stickArea)) return;
+
+    const rect = renderer.domElement.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    mouse.x = ((cx - rect.left)/rect.width ) * 2 - 1;
+    mouse.y = -((cy - rect.top )/rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(tiles.map(t=>t.mesh), false);
+    if (intersects.length) {
+      const m = intersects[0].object;
+      const tile = tiles.find(t=>t.mesh===m);
+      if (!tile) return;
+      if (tile.state==='empty' && state.coins>=50) {
+        state.coins -= 50; tile.state='growing'; tile.timer=0;
+        m.material = tileMatGrowing;
+        // add tiny starter crystal for feedback
+        if (!tile.crystal) {
+          tile.crystal = mkCrystal(0.01, 0x2aa9ff);
+          tile.crystal.position.copy(m.position).add(new THREE.Vector3(0,0.2,0));
+          island.add(tile.crystal);
+        }
+        showTip('Zasiano! Poczekaj aż dojrzeje…');
+        updateHUD();
+      } else if (tile.state==='mature') {
+        // harvest
+        const gain = 120;
+        state.coins += gain;
+        tile.state='empty'; tile.timer=0;
+        m.material = tileMatEmpty;
+        if (tile.crystal) { island.remove(tile.crystal); tile.crystal.geometry.dispose(); tile.crystal.material.dispose(); tile.crystal=null; }
+        burst(m.position.x, 0.4, m.position.z, 10, 0x67e8f9);
+        showTip(`Zebrano +${gain} 💎`);
+        updateHUD();
+      } else {
+        showTip('Brak monet (50) lub jeszcze rośnie…');
+      }
+      localStorage.setItem('cf3d_coins', String(state.coins|0));
     }
-    document.getElementById('finalBest').textContent = S.best;
-    overOv.classList.remove('hidden');
   }
 
-  // Losowości i timery
-  let spawnMs=0, gemMs=800;
-  const R = (a,b)=>Math.random()*(b-a)+a;
+  renderer.domElement.addEventListener('click', onTap, {passive:true});
+  renderer.domElement.addEventListener('touchend', onTap, {passive:true});
 
-  // Pętla gry
-  function loop(ts) {
-    if (!S.running || S.paused) return;
-    if (!lastTs) lastTs = ts;
-    const dt = Math.min(0.032, (ts - lastTs)/1000); // clamp 32ms
-    lastTs = ts;
-    update(dt);
-    draw();
+  // ====== Particles ======
+  const particles = [];
+  const pGeo = new THREE.PlaneGeometry(0.06,0.06);
+  const pMat = new THREE.MeshBasicMaterial({ color:0x9bd8ff, transparent:true, opacity:1, side:THREE.DoubleSide });
+
+  function burst(x,y,z,count,color){
+    for(let i=0;i<count;i++){
+      const m = new THREE.Mesh(pGeo, pMat.clone());
+      m.material.color = new THREE.Color(color);
+      m.position.set(x,y,z);
+      m.rotation.y = Math.random()*Math.PI;
+      m.userData = {
+        vx:(Math.random()-0.5)*2.2, vy:Math.random()*2.3, vz:(Math.random()-0.5)*2.2,
+        life:0.7, t:0
+      };
+      scene.add(m); particles.push(m);
+    }
+  }
+
+  // ====== Dash / Attack ======
+  function doDash(){
+    if (state.dashCD>0 || state.dashing===true || !state.running) return;
+    state.dashing = true;
+    state.dashTime = 0.28;
+    state.dashCD = 1.1;
+    burst(player.position.x, 0.5, player.position.z, 12, 0xa78bfa);
+  }
+
+  // ====== Camera follow ======
+  const camTarget = new THREE.Vector3();
+  function updateCamera(dt){
+    // follow behind player
+    const desired = new THREE.Vector3(player.position.x, 3.5, player.position.z + 6);
+    camera.position.lerp(desired, 1 - Math.pow(0.001, dt*60));
+    camTarget.set(player.position.x, player.position.y+0.6, player.position.z);
+    camera.lookAt(camTarget);
+  }
+
+  // ====== Tip (toast) ======
+  const tip = document.getElementById('tip');
+  let tipTimer = 0;
+  function showTip(msg){
+    tip.textContent = msg;
+    tip.classList.add('show');
+    tipTimer = 1.5;
+  }
+
+  // ====== Game loop ======
+  let last = performance.now();
+  function loop(now){
+    const dt = Math.min(0.033, (now - last)/1000);
+    last = now;
+
+    if (state.running) {
+      // Movement
+      const move = stickToWorld(joy.dx, joy.dy);
+      const speed = state.dashing ? 10 : 3.2;
+      player.position.x += move.x * speed * dt;
+      player.position.z += move.z * speed * dt;
+
+      // clamp to island disc
+      const r = Math.sqrt(player.position.x**2 + player.position.z**2);
+      if (r > 7.0) {
+        const k = 7.0 / r;
+        player.position.x *= k; player.position.z *= k;
+      }
+
+      // player tilt a bit
+      player.rotation.z = -move.x * 0.15;
+      player.rotation.x = move.z * 0.1;
+
+      // Grow tiles
+      for (const t of tiles) {
+        if (t.state==='growing') {
+          t.timer += dt;
+          const k = Math.min(1, t.timer / t.growTime);
+          // material emissive pulse
+          t.mesh.material.emissiveIntensity = 0.2 + 0.25*Math.sin(k*Math.PI*4)*Math.exp(-k*1.2);
+          // crystal growth
+          if (t.crystal) {
+            const s = 0.01 + k*0.35;
+            t.crystal.scale.setScalar(THREE.MathUtils.lerp(t.crystal.scale.x||0.01, s, 0.2));
+            t.crystal.position.y = 0.2 + k*0.5;
+          }
+          if (t.timer >= t.growTime) {
+            t.state='mature';
+            t.mesh.material = tileMatMature;
+            if (t.crystal) { t.crystal.material.emissiveIntensity = 0.6; }
+            burst(t.mesh.position.x, 0.5, t.mesh.position.z, 6, 0x2aa9ff);
+          }
+        }
+      }
+
+      // Enemies AI
+      state.waveTimer -= dt;
+      if (state.waveTimer <= 0) {
+        spawnEnemy();
+        if (Math.random() < 0.6) spawnEnemy();
+        state.waveTimer = 3.5 + Math.random()*2;
+      }
+      for (let i=enemies.length-1;i>=0;i--){
+        const e = enemies[i];
+        if (!e.userData.alive) continue;
+        const v = new THREE.Vector3().subVectors(player.position, e.position);
+        v.y = 0; const len = v.length() || 0.001; v.normalize();
+        e.position.addScaledVector(v, e.userData.speed * dt);
+        e.rotation.y += dt*2;
+
+        // collide with player
+        const dist = e.position.distanceTo(player.position);
+        if (dist < 0.8) {
+          if (state.dashing) {
+            // kill enemy
+            e.userData.alive = false;
+            burst(e.position.x, 0.5, e.position.z, 10, 0xf472b6);
+            island.remove(e); e.geometry.dispose(); e.material.dispose();
+            enemies.splice(i,1);
+            state.coins += 20; updateHUD();
+            localStorage.setItem('cf3d_coins', String(state.coins|0));
+          } else if (state.invuln<=0) {
+            state.hearts--; state.invuln = 1.2;
+            updateHUD();
+            if (state.hearts<=0) {
+              endGame();
+              return;
+            }
+          }
+        }
+      }
+
+      // Dash timers
+      if (state.dashing) {
+        state.dashTime -= dt;
+        if (state.dashTime <= 0) state.dashing = false;
+      }
+      if (state.dashCD>0) state.dashCD -= dt;
+      if (state.invuln>0) state.invuln -= dt;
+
+      // Particles
+      for (let i=particles.length-1;i>=0;i--){
+        const p = particles[i], u = p.userData;
+        u.t += dt; p.position.x += u.vx*dt; p.position.y += u.vy*dt; p.position.z += u.vz*dt;
+        u.vy -= 3.5*dt;
+        p.material.opacity = Math.max(0, 1 - u.t/u.life);
+        if (u.t >= u.life) { scene.remove(p); p.geometry.dispose(); p.material.dispose(); particles.splice(i,1); }
+      }
+
+      // Camera follow
+      updateCamera(dt);
+    }
+
+    // Tip
+    if (tipTimer>0){ tipTimer -= dt; if (tipTimer<=0) tip.classList.remove('show'); }
+
+    renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
+  requestAnimationFrame(loop);
 
-  function update(dt) {
-    S.t += dt;
-    S.speed += dt*12;
-    S.score += dt*(S.speed/9.5);
-    scoreEl.textContent = 'Punkty: ' + Math.floor(S.score);
+  // ====== Start / Game Over / Add to Home ======
+  const startOv = document.getElementById('startOv');
+  const gameOver = document.getElementById('gameOver');
+  const playBtn = document.getElementById('playBtn');
+  const againBtn = document.getElementById('againBtn');
+  const finalScore = document.getElementById('finalScore');
+  const addBtn = document.getElementById('addBtn');
 
-    // skok trzymany
-    if (!player.grounded && pressing) {
-      const held = Math.min(S.holdMs, performance.now()-pressStart);
-      if (held < S.holdMs) player.vy -= 920 * dt;
-    }
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; });
+  addBtn.addEventListener('click', async ()=>{
+    if (deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; }
+    else alert('Na iPhonie: Udostępnij → Dodaj do ekranu początkowego');
+  });
 
-    // grawitacja/ruch
-    player.vy += S.gravity * dt;
-    player.y  += player.vy * dt;
-    if (player.y + player.h >= floor.y) {
-      player.y = floor.y - player.h;
-      player.vy = 0;
-      player.grounded = true;
-    } else {
-      player.grounded = false;
-    }
-
-    // przeszkody
-    spawnMs -= dt*1000;
-    if (spawnMs <= 0) {
-      const gapMin = 700 - Math.min(420, S.t*22);
-      const gapMax = 1100 - Math.min(560, S.t*34);
-      spawnMs = R(gapMin, gapMax);
-      const w = R(player.w*.9, player.w*1.6);
-      const h = R(player.h*.9, player.h*1.6);
-      obs.push({ x: W+w, y: floor.y-h, w, h, vx: -S.speed, c:'#f472b6' });
-      if (Math.random() < Math.min(0.28, S.t/40)) {
-        const w2=R(player.w*.8, player.w*1.3), h2=R(player.h*.8, player.h*1.4);
-        obs.push({ x: W+w+R(90,150), y: floor.y-h2, w:w2, h:h2, vx:-S.speed, c:'#a78bfa' });
-      }
-    }
-    // diamenciki
-    gemMs -= dt*1000;
-    if (gemMs <= 0) {
-      gemMs = R(1500, 2600);
-      const s = player.w*.62;
-      gems.push({ x: W+s, y: floor.y - player.h - R(60,150)*DPR, w:s, h:s, vx:-S.speed*1.02, t:0 });
-    }
-
-    // ruch / usuwanie
-    for (let i=obs.length-1;i>=0;i--) {
-      const o = obs[i]; o.x += o.vx*dt; if (o.x + o.w < -32) obs.splice(i,1);
-    }
-    for (let i=gems.length-1;i>=0;i--) {
-      const g = gems[i]; g.x += g.vx*dt; g.t += dt; if (g.x + g.w < -32) gems.splice(i,1);
-    }
-
-    // kolizje
-    for (const o of obs) if (hit(player,o)) { gameOver(); return; }
-    for (let i=gems.length-1;i>=0;i--) {
-      const g=gems[i];
-      if (hit(player,g)) { S.score += 28; gems.splice(i,1); player.spin = Math.PI*2; }
-    }
-    if (player.spin > 0) player.spin = Math.max(0, player.spin - dt*8);
+  function begin(){
+    state.running = true;
+    state.hearts = 3;
+    updateHUD();
+    showTip('Dotknij płytki, aby zasadzić / zebrać');
+    startOv.classList.add('hidden');
+    gameOver.classList.add('hidden');
+  }
+  function endGame(){
+    state.running = false;
+    finalScore.textContent = state.coins|0;
+    gameOver.classList.remove('hidden');
   }
 
-  // rysowanie
-  function draw() {
-    ctx.clearRect(0,0,W,H);
-    // tło
-    const t = S.t;
-    for (let r=1;r<=3;r++){
-      const sp=S.speed*(0.08*r), y=H*(0.18*r), n=12*r;
-      for (let i=0;i<n;i++){
-        const x=((i*260+(t*-sp)*0.5)%(W+260))-130;
-        const s=2*DPR*r*.6;
-        ctx.globalAlpha=0.22+0.1*r;
-        ctx.fillStyle='#cbd5e1';
-        ctx.fillRect(x, y+Math.sin((i+t)*0.8)*4*r, s, s);
-        ctx.globalAlpha=1;
-      }
-    }
-    // podłoga
-    ctx.fillStyle='#121420';
-    ctx.fillRect(0, floor.y, W, floor.h);
+  playBtn.addEventListener('click', begin, {passive:true});
+  againBtn.addEventListener('click', begin, {passive:true});
 
-    // przeszkody
-    for (const o of obs) {
-      roundRect(ctx, o.x, o.y, o.w, o.h, 8*DPR);
-      ctx.fillStyle=o.c; ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.15)'; ctx.lineWidth=2*DPR; ctx.stroke();
-    }
-    // diamenciki
-    for (const g of gems) {
-      const pul=1+Math.sin(g.t*6)*.12;
-      ctx.save(); ctx.translate(g.x+g.w/2, g.y+g.h/2); ctx.scale(pul,pul);
-      ctx.strokeStyle='#67e8f9'; ctx.lineWidth=3*DPR;
-      diamond(ctx, -g.w/2, -g.h/2, g.w, g.h); ctx.stroke();
-      ctx.restore();
-    }
-    // gracz
-    drawPlayer();
+  // ====== Resize ======
+  function onResize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w,h);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
   }
-
-  function roundRect(c,x,y,w,h,r){
-    const rr=Math.min(r,w/2,h/2);
-    c.beginPath();
-    c.moveTo(x+rr,y);
-    c.arcTo(x+w,y,x+w,y+h,rr);
-    c.arcTo(x+w,y+h,x,y+h,rr);
-    c.arcTo(x,y+h,x,y,rr);
-    c.arcTo(x,y,x+w,y,rr);
-    c.closePath();
-  }
-  function diamond(c,x,y,w,h){
-    c.beginPath();
-    c.moveTo(x+w/2,y);
-    c.lineTo(x+w,y+h/2);
-    c.lineTo(x+w/2,y+h);
-    c.lineTo(x,y+h/2);
-    c.closePath();
-  }
-  function drawPlayer(){
-    const {x,y,w,h}=player;
-    ctx.save(); ctx.translate(x+w/2, y+h/2); if(player.spin) ctx.rotate(player.spin*.5);
-    const grad=ctx.createLinearGradient(-w/2,-h/2,w/2,h/2);
-    grad.addColorStop(0,'#67e8f9'); grad.addColorStop(1,'#a78bfa');
-    ctx.fillStyle=grad; roundRect(ctx,-w/2,-h/2,w,h,12*DPR); ctx.fill();
-    ctx.fillStyle='#0f1116';
-    const eye=Math.max(2*DPR, w*.08);
-    ctx.beginPath(); ctx.arc(-w*.18, -h*.06, eye, 0, Math.PI*2);
-    ctx.arc( w*.18, -h*.06, eye, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-    // cień
-    const sw=w*.9, sx=x+w/2-sw/2, sy=floor.y+4*DPR, sh=6*DPR;
-    ctx.globalAlpha=.25; ctx.fillStyle='#000'; roundRect(ctx,sx,sy,sw,sh,sh/2); ctx.fill(); ctx.globalAlpha=1;
-  }
-  function hit(a,b){
-    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-  }
-
-  // Ustaw startowy ekran
-  function showStart(){ startOv.classList.remove('hidden'); }
-  showStart();
-
-  // Umożliwiamy kontynuację jednym tapnięciem: klik w overlay lub canvas
-  startOv.addEventListener('click', () => { if (!S.running) startGame(); }, { passive:true });
-  overOv.addEventListener('click',  (e) => {
-    // klik w tło (nie w przycisk) też wznawia
-    if (e.target === overOv && !S.running) startGame();
-  }, { passive:true });
+  window.addEventListener('resize', onResize, {passive:true});
 
 })();
 </script>
