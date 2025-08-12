@@ -1,477 +1,702 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Aurora X — Ultra Premium Landing</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>L’Atelier Parfum – Ekskluzywna Perfumeria</title>
+<meta name="description" content="Ekskluzywna perfumeria premium: niszowe zapachy, selekcja haute couture, butikowy klimat." />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,500;0,700;1,600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#07080d;
-    --card:#0e1018;
-    --ink:#eaf2ff;
-    --muted:#a8b3c9;
-    --acc1:#65e1ff;
-    --acc2:#8a6bff;
-    --acc3:#ff6fa6;
-    --radial:radial-gradient(900px 600px at 20% -10%, rgba(101,225,255,.25), transparent 60%),
-             radial-gradient(900px 600px at 120% 10%, rgba(138,107,255,.20), transparent 60%),
-             radial-gradient(900px 600px at 80% 120%, rgba(255,111,166,.14), transparent 60%);
+    --bg:#0b0b0d;
+    --bg-soft:#0f0f13;
+    --ink:#e9e6e2;
+    --muted:#b7b3ad;
+    --gold:#c9a46b;
+    --gold-2:#b48a4e;
+    --accent:#7a6a4a;
+    --glass: rgba(255,255,255,.03);
+    --stroke: rgba(255,255,255,.08);
+    --shadow: 0 10px 30px rgba(0,0,0,.45);
+    --radius: 18px;
+    --ease: cubic-bezier(.22,.61,.36,1);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
+  html{scroll-behavior:smooth}
   body{
-    margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    color:var(--ink); background:var(--radial), var(--bg); overflow-x:hidden;
-    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    scroll-behavior:smooth;
+    margin:0; background: var(--bg);
+    color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    line-height:1.5;
+    overflow-x:hidden;
   }
-  a{color:inherit; text-decoration:none}
-  .container{width:min(1140px,92vw); margin-inline:auto}
-  /* --- PRELOADER --- */
-  #preloader{
-    position:fixed; inset:0; background:linear-gradient(180deg,#06070b,#0a0c14); z-index:2000;
-    display:grid; place-items:center;
+
+  /* Delikatna ziarnistość tła - luksusowa faktura */
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(201,164,107,.12), transparent 40%),
+      radial-gradient(900px 600px at -10% 110%, rgba(92,78,56,.18), transparent 45%),
+      linear-gradient(180deg, rgba(255,255,255,.03), transparent 20%),
+      repeating-radial-gradient(circle at 20% 30%, rgba(255,255,255,.04) 0 1px, transparent 1px 3px);
+    mix-blend-mode: screen;
+    pointer-events:none;
+    z-index:0;
   }
-  .loader{
-    width:96px; height:96px; border-radius:50%;
-    background:conic-gradient(from 0deg, var(--acc1), var(--acc2), var(--acc3), var(--acc1));
-    -webkit-mask:radial-gradient(farthest-side, #0000 calc(100% - 16px), #000 0);
-            mask:radial-gradient(farthest-side, #0000 calc(100% - 16px), #000 0);
-    animation:spin 1.1s linear infinite;
-  }
-  @keyframes spin{to{transform:rotate(1turn)}}
-  /* --- NAV --- */
+
+  /* Nawigacja */
   .nav{
-    position:fixed; inset-inline:0; top:12px; z-index:1000; display:flex; justify-content:center;
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.15));
+    border-bottom:1px solid var(--stroke);
   }
-  .nav .bar{
-    display:flex; gap:6px; padding:10px; border-radius:16px; align-items:center;
-    background:rgba(15,18,28,.6); border:1px solid rgba(255,255,255,.08); backdrop-filter:blur(12px);
+  .nav-inner{
+    max-width:1200px; margin:0 auto; padding:14px 20px;
+    display:flex; align-items:center; gap:24px;
   }
-  .nav a{padding:10px 14px; border-radius:12px; font-weight:600; opacity:.9}
-  .nav a.active,.nav a:hover{background:rgba(255,255,255,.08)}
-  /* --- HERO --- */
-  header{position:relative; min-height:120svh; overflow:hidden; display:grid; place-items:center; isolation:isolate}
-  canvas#stars{position:absolute; inset:0; z-index:0}
-  .halo{position:absolute; inset:-20%; filter:blur(80px); opacity:.35; z-index:0;
-        background:radial-gradient(600px 400px at 15% 10%, rgba(101,225,255,.45), transparent 60%),
-                   radial-gradient(600px 400px at 85% 35%, rgba(138,107,255,.4), transparent 60%)}
-  .hero{position:relative; z-index:1; display:grid; grid-template-columns:1.15fr .85fr; gap:min(7vw,50px); align-items:center; padding-top:70px}
-  .overline{display:inline-flex; gap:.5rem; align-items:center; padding:.35rem .65rem; border-radius:999px;
-            background:linear-gradient(90deg, rgba(101,225,255,.2), rgba(255,111,166,.2));
-            border:1px solid rgba(255,255,255,.16); font-weight:700; font-size:.85rem}
-  h1{font-size:clamp(2rem,6.8vw,4.5rem); line-height:1.04; letter-spacing:-.01em; margin:.4rem 0 .6rem}
-  .grad{background:linear-gradient(90deg,var(--acc1),var(--acc2),var(--acc3)); -webkit-background-clip:text; background-clip:text; color:transparent}
-  .lead{color:var(--muted); max-width:60ch}
-  .cta{display:flex; gap:12px; align-items:center; margin-top:18px; flex-wrap:wrap}
-  .btn{appearance:none; border:0; cursor:pointer; border-radius:14px; padding:14px 20px; font-weight:800;
-       background:linear-gradient(135deg,var(--acc2),var(--acc3)); color:white; transition:transform .12s, box-shadow .2s;}
-  .btn:active{transform:scale(.98)}
-  .btn.secondary{background:transparent; border:1px solid rgba(255,255,255,.15); font-weight:700}
-  .magnet{position:relative; display:inline-block}
-  .magnet:hover .btn{transform:translate(var(--tx,0), var(--ty,0)) scale(1.02)}
-  /* Phone mock */
-  .phone{position:relative; width:min(360px,86vw); aspect-ratio:9/19.5; margin-inline:auto; border-radius:32px;
-         background:linear-gradient(160deg,#141726 0%,#0f121c 100%);
-         border:1px solid rgba(255,255,255,.08); box-shadow:0 20px 60px rgba(0,0,0,.6), inset 0 0 0 8px #0a0c13;
-         overflow:hidden; transform:rotate(-7deg) translateY(12px); transition:transform .6s cubic-bezier(.2,.8,.2,1)}
-  .phone .notch{position:absolute; top:8px; left:50%; transform:translateX(-50%); width:42%; height:18px; background:#0a0c13; border-radius:0 0 12px 12px; border:1px solid rgba(255,255,255,.06)}
-  .screen{position:absolute; inset:12px; border-radius:24px; overflow:hidden; background:linear-gradient(180deg,#121528,#0a0c16)}
-  .screen .shine{position:absolute; inset:-20% -20% auto auto; width:180%; height:140%; background:
-                 conic-gradient(from 200deg at 70% 10%, rgba(101,225,255,.24), rgba(138,107,255,.22), rgba(255,111,166,.25), transparent 60%);
-                 opacity:.65; mix-blend-mode:screen; animation:shine 14s linear infinite}
-  @keyframes shine{to{transform:rotate(1turn)}}
-  .ui{position:absolute; inset:0; display:grid; place-items:center; gap:12px; text-align:center; padding:16px}
-  .tag{display:inline-flex; gap:.5rem; align-items:center; padding:.35rem .75rem; border-radius:999px; background:rgba(255,255,255,.06);
-       border:1px solid rgba(255,255,255,.12); color:#d7e6ff; font-weight:700; font-size:.85rem; backdrop-filter:blur(6px)}
-  .floating{position:absolute; right:-12%; top:16%; width:56%; background:rgba(255,255,255,.05);
-            border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:12px; backdrop-filter:blur(6px);
-            transform:translateY(14px); opacity:0; transition:transform .6s, opacity .6s}
-  .phone:hover{transform:rotate(-2deg) translateY(0)}
-  /* --- SECTIONS --- */
-  section{position:relative; padding:90px 0}
-  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.1);
-        border-radius:16px; padding:18px; min-height:150px; transform:translateY(18px) scale(.98); opacity:0; transition:transform .7s cubic-bezier(.2,.8,.2,1), opacity .7s}
-  .card.show{transform:translateY(0) scale(1); opacity:1}
-  .ico{width:38px; height:38px; border-radius:10px; display:grid; place-items:center; margin-bottom:12px;
-       background:linear-gradient(135deg,var(--acc1),var(--acc2)); font-weight:800}
-  /* Tabs */
-  .tabs{margin-top:18px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px}
-  .tab-head{display:flex; gap:6px; padding:8px; border-bottom:1px solid rgba(255,255,255,.08); flex-wrap:wrap}
-  .tab-head button{padding:10px 14px; border-radius:12px; border:0; background:transparent; color:var(--ink); font-weight:700; cursor:pointer}
-  .tab-head button.active{background:rgba(255,255,255,.1)}
-  .tab-body>div{display:none; padding:16px}
-  .tab-body>div.active{display:block}
-  /* Showcases */
-  .showcase{display:grid; grid-template-columns:1.1fr .9fr; gap:20px; align-items:center}
-  .panel{height:380px; border-radius:18px; overflow:hidden; position:relative; border:1px solid rgba(255,255,255,.1); background:#0e111a}
-  .panel .layer{position:absolute; inset:-10%; background:radial-gradient(900px 600px at 30% 10%, rgba(101,225,255,.24), transparent 40%),
-                                         radial-gradient(900px 600px at 90% 50%, rgba(138,107,255,.24), transparent 40%);
-                animation:floatBg 14s ease-in-out infinite alternate}
-  @keyframes floatBg{from{transform:translateY(-1%)} to{transform:translateY(1%)}}
-  .panel .badge{position:absolute; bottom:12px; right:12px; padding:.4rem .7rem; border-radius:999px; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.12)}
-  /* Configurator */
-  .swatches{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap}
-  .swatch{width:28px; height:28px; border-radius:999px; border:2px solid #fff2; cursor:pointer; outline:2px solid transparent; outline-offset:2px}
-  .swatch.active{outline-color:#fff8}
-  /* Accordion */
-  .accordion{display:grid; gap:10px; margin-top:18px}
-  details{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 16px}
-  summary{cursor:pointer; list-style:none; font-weight:800}
-  details p{color:#cfd7ee; margin:.6rem 0 .2rem}
-  /* CTA bar */
-  .cta-bar{position:sticky; bottom:16px; margin-top:40px; z-index:900; display:flex; justify-content:center}
-  .cta-bar .inner{display:flex; gap:12px; align-items:center; background:rgba(18,19,26,.7); border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:10px 14px; backdrop-filter:blur(8px)}
-  /* Testimonials marquee */
-  .marquee{overflow:hidden; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(255,255,255,.03); margin-top:16px}
-  .marquee-track{display:flex; gap:16px; padding:12px; animation:mar 22s linear infinite}
-  .bubble{white-space:nowrap; padding:10px 14px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:#dfe7ff; font-weight:600}
-  @keyframes mar{to{transform:translateX(-50%)}}
-  /* Footer */
-  footer{padding:50px 0; color:#b9c2db; font-size:.92rem}
-  /* Responsive */
-  @media (max-width:980px){ .hero{grid-template-columns:1fr; text-align:center} .showcase{grid-template-columns:1fr} .grid3{grid-template-columns:1fr} .phone{margin-top:18px}}
+  .brand{
+    font-family:"Playfair Display", serif;
+    letter-spacing:.08em;
+    font-size:20px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-transform:uppercase;
+  }
+  .menu{margin-left:auto; display:flex; gap:18px; align-items:center}
+  .menu a{
+    color:var(--muted); text-decoration:none; font-size:14px; letter-spacing:.06em; text-transform:uppercase;
+    padding:10px 12px; border-radius:12px; transition:all .35s var(--ease);
+  }
+  .menu a:hover{color:var(--ink); background:var(--glass)}
+  .cta{
+    border:1px solid var(--gold); color:var(--ink); background: linear-gradient(180deg, rgba(201,164,107,.18), rgba(201,164,107,.03));
+    padding:10px 16px; border-radius:14px; text-decoration:none; font-weight:600; letter-spacing:.04em;
+    box-shadow:0 4px 20px rgba(201,164,107,.15);
+  }
+  .cta:hover{transform:translateY(-1px); box-shadow:0 8px 28px rgba(201,164,107,.25)}
+
+  /* Preloader + atomizer spray */
+  .preloader{
+    position:fixed; inset:0; z-index:2000; display:grid; place-items:center;
+    background: radial-gradient(800px 500px at 50% 0%, rgba(201,164,107,.08), transparent 60%), #070708;
+    overflow:hidden;
+  }
+  .preloader .logo{
+    font-family:"Playfair Display", serif; font-size:28px; letter-spacing:.18em; text-transform:uppercase;
+    background: linear-gradient(90deg, #f1e9dc, #b08a56); -webkit-background-clip:text; background-clip:text; color:transparent;
+    opacity:.9;
+  }
+  .atomizer-wrap{
+    position:absolute; inset:0; pointer-events:none;
+  }
+  canvas#atomizer{
+    position:absolute; inset:0; width:100%; height:100%;
+    filter: blur(1.2px) contrast(110%);
+    opacity:.8;
+  }
+  .preloader.fade-out{animation: preloaderExit .9s var(--ease) forwards .15s}
+  @keyframes preloaderExit{
+    to{opacity:0; visibility:hidden}
+  }
+
+  /* Hero */
+  .hero{
+    position:relative; min-height:100svh; display:grid; place-items:center;
+    padding-top:84px; /* offset nawigacji */
+  }
+  .hero-inner{
+    max-width:1200px; width:100%; padding:40px 20px;
+    display:grid; grid-template-columns: 1.1fr .9fr; gap:40px; align-items:center;
+  }
+  .headline{
+    font-family:"Playfair Display", serif;
+    font-size: clamp(34px, 5vw, 64px);
+    line-height:1.05;
+    margin:0 0 16px;
+    letter-spacing:.01em;
+  }
+  .sub{
+    color:var(--muted); font-size:18px; max-width:52ch;
+  }
+  .hero-cta{margin-top:28px; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .btn{
+    border:1px solid var(--stroke); background:rgba(255,255,255,.02); color:var(--ink);
+    padding:12px 18px; border-radius:14px; text-decoration:none; transition:all .35s var(--ease);
+  }
+  .btn:hover{border-color:var(--gold); transform:translateY(-1px)}
+  .btn.gold{border-color:var(--gold); background:linear-gradient(180deg, rgba(201,164,107,.18), rgba(201,164,107,.04))}
+  .hero-art{
+    position:relative; aspect-ratio: 4/5; border-radius: var(--radius);
+    background:
+      radial-gradient(180px 40px at 70% 30%, rgba(255,255,255,.25), transparent 70%),
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
+      linear-gradient(120deg, #1a1a21, #0d0d12);
+    box-shadow: var(--shadow);
+    overflow:hidden; border:1px solid var(--stroke);
+  }
+  .hero-art::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(500px 300px at 30% 10%, rgba(201,164,107,.2), transparent 50%),
+      radial-gradient(450px 380px at 80% 90%, rgba(113,96,70,.18), transparent 55%);
+    opacity:.6; mix-blend-mode: screen;
+  }
+  .bottle{
+    position:absolute; left:50%; top:52%; transform:translate(-50%,-50%) rotate(-6deg);
+    width:min(58%, 360px);
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,.6));
+  }
+
+  /* Sekcja kolekcji */
+  section{position:relative; padding:90px 20px}
+  .wrap{max-width:1200px; margin:0 auto}
+  .section-title{
+    font-family:"Playfair Display", serif; font-size: clamp(26px, 3.4vw, 40px); margin:0 0 10px;
+  }
+  .section-sub{color:var(--muted); margin:0 0 28px}
+  .grid{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:22px;
+  }
+  .card{
+    position:relative; border:1px solid var(--stroke); border-radius:16px; overflow:hidden;
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .5s var(--ease);
+  }
+  .card:hover{transform:translateY(-6px); border-color: rgba(201,164,107,.35); box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .thumb{
+    aspect-ratio: 4/3; position:relative; overflow:hidden;
+    background:
+      radial-gradient(240px 140px at 70% 20%, rgba(201,164,107,.32), transparent 60%),
+      linear-gradient(120deg, #1c1b21, #0e0d12);
+  }
+  .thumb::after{
+    content:""; position:absolute; inset:0;
+    background:
+      conic-gradient(from 180deg at 70% 30%, rgba(255,255,255,.2), transparent 40%),
+      radial-gradient(120px 80px at 30% 60%, rgba(255,255,255,.08), transparent 60%);
+    mix-blend-mode: screen; opacity:.6;
+  }
+  .card-body{padding:18px}
+  .note{font-size:12px; letter-spacing:.08em; color:var(--muted); text-transform:uppercase}
+  .name{font-weight:700; font-size:18px; margin:6px 0 4px}
+  .price{color:var(--gold); font-weight:600}
+  .card-actions{display:flex; gap:10px; margin-top:12px}
+  .chip{
+    font-size:12px; padding:8px 10px; border:1px solid var(--stroke); border-radius:999px; color:var(--muted);
+    background:rgba(255,255,255,.02);
+  }
+  .buy{
+    margin-left:auto; border:1px solid var(--gold); color:var(--ink); background:rgba(201,164,107,.08);
+    padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer;
+  }
+
+  /* Akordeon (nuty zapachowe) */
+  .accordion{
+    margin-top:26px; border:1px solid var(--stroke); border-radius:16px; overflow:hidden;
+    background:rgba(255,255,255,.02)
+  }
+  details{border-top:1px solid var(--stroke)}
+  details:first-child{border-top:none}
+  summary{
+    cursor:pointer; padding:16px 18px; list-style:none; display:flex; align-items:center; gap:10px; color:var(--ink);
+  }
+  summary::-webkit-details-marker{display:none}
+  details[open] summary{background:rgba(255,255,255,.02)}
+  .acc-body{padding:0 18px 18px; color:var(--muted)}
+
+  /* Pasek kolekcji (marquee) */
+  .marquee{
+    overflow:hidden; border-block:1px solid var(--stroke); background:rgba(255,255,255,.02)
+  }
+  .marquee-track{
+    display:flex; gap:40px; padding:16px 0; white-space:nowrap; will-change: transform;
+    animation: move 30s linear infinite;
+  }
+  @keyframes move{
+    from{transform:translateX(0)} to{transform:translateX(-50%)}
+  }
+  .pill{
+    font-family:"Playfair Display", serif;
+    padding:8px 14px; border:1px solid var(--stroke); border-radius:999px; color:#e7e2da; opacity:.8
+  }
+
+  /* Sekcja „O nas” z efektem szkła */
+  .glass{
+    display:grid; grid-template-columns: 1.1fr .9fr; gap:28px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    border:1px solid var(--stroke); border-radius:18px; padding:28px; backdrop-filter: blur(8px);
+  }
+  .glass-visual{
+    aspect-ratio:4/3; border-radius:14px; border:1px solid var(--stroke);
+    background:
+      radial-gradient(260px 120px at 75% 20%, rgba(201,164,107,.25), transparent 60%),
+      linear-gradient(120deg, #1c1b21, #0c0c11);
+    position:relative; overflow:hidden;
+  }
+  .glass-visual svg{position:absolute; inset:auto 10% 8% auto; width:120px; opacity:.8; filter:drop-shadow(0 6px 20px rgba(0,0,0,.5))}
+  .list{display:grid; gap:8px; margin-top:10px}
+  .list li{color:var(--muted)}
+
+  /* Opinie */
+  .quotes{display:grid; grid-template-columns: repeat(3,1fr); gap:16px}
+  .quote{
+    border:1px solid var(--stroke); border-radius:16px; padding:18px; background:rgba(255,255,255,.02);
+    color:#dcd7d0; font-style:italic;
+  }
+
+  /* Stopka */
+  footer{
+    border-top:1px solid var(--stroke); background: rgba(0,0,0,.5);
+    padding:30px 20px; color:var(--muted);
+  }
+  .foot{max-width:1200px; margin:0 auto; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:20px}
+  .foot small{color:#948e85}
+  .foot a{color:var(--muted); text-decoration:none}
+
+  /* Modal „Kup teraz” */
+  .modal{
+    position:fixed; inset:0; display:none; place-items:center; z-index:1500;
+    background:rgba(0,0,0,.6);
+  }
+  .modal.show{display:grid; animation:fadeIn .35s var(--ease)}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .sheet{
+    width:min(720px, 92vw); border-radius:18px; border:1px solid var(--stroke); box-shadow: var(--shadow);
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    overflow:hidden;
+  }
+  .sheet header{
+    display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:1px solid var(--stroke)
+  }
+  .close{background:transparent; border:1px solid var(--stroke); color:var(--ink); border-radius:10px; padding:8px 12px; cursor:pointer}
+  .sheet .content{padding:18px; color:var(--muted)}
+  .payrow{display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:10px}
+  .field{display:grid; gap:6px}
+  .field input, .field select{
+    background:#0e0e12; color:var(--ink); border:1px solid var(--stroke); border-radius:12px; padding:12px;
+  }
+  .pay{margin-top:16px; display:flex; gap:10px; align-items:center}
+  .pay .btn{border-color:var(--gold); background:rgba(201,164,107,.12)}
+
+  /* Wejścia animowane – reveal */
+  .reveal{opacity:0; transform: translateY(18px); transition: all .9s var(--ease)}
+  .reveal.visible{opacity:1; transform:none}
+
+  /* Responsywność */
+  @media (max-width: 980px){
+    .hero-inner{grid-template-columns: 1fr; gap:20px}
+    .glass{grid-template-columns:1fr}
+    .grid{grid-template-columns:1fr 1fr}
+    .quotes{grid-template-columns:1fr}
+    .foot{grid-template-columns:1fr}
+  }
+  @media (max-width: 640px){
+    .grid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
-  <!-- PRELOADER -->
-  <div id="preloader">
-    <div class="loader"></div>
-  </div>
 
-  <!-- NAV -->
-  <div class="nav">
-    <div class="bar">
-      <a href="#start" class="active">Start</a>
-      <a href="#funkcje">Funkcje</a>
-      <a href="#pokaz">Pokaz</a>
-      <a href="#konfigurator">Konfigurator</a>
-      <a href="#faq">FAQ</a>
+<!-- PRELOADER z efektem atomizera -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="logo">L’ATELIER&nbsp;PARFUM</div>
+  <div class="atomizer-wrap"><canvas id="atomizer"></canvas></div>
+</div>
+
+<!-- NAWIGACJA -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">L’Atelier Parfum</div>
+    <div class="menu">
+      <a href="#kolekcja" data-nav>kolekcja</a>
+      <a href="#o-nas" data-nav>o nas</a>
+      <a href="#opinie" data-nav>opinie</a>
+      <a href="#kontakt" data-nav>kontakt</a>
+      <a href="#kolekcja" class="cta" data-nav>Sklep</a>
     </div>
   </div>
+</nav>
 
-  <!-- HERO -->
-  <header id="start">
-    <canvas id="stars"></canvas>
-    <div class="halo" aria-hidden="true"></div>
-    <div class="container hero">
-      <div>
-        <span class="overline">Nowość • Edycja Limitowana</span>
-        <h1>Poznaj <span class="grad">Aurora X</span></h1>
-        <p class="lead">Najbardziej dopracowany landing na mobile. Dziesiątki mikro‑interakcji, płynne przejścia 3D, parallax, karuzele i sticky CTA. Wszystko w jednym pliku.</p>
-        <div class="cta">
-          <span class="magnet"><button class="btn" id="buy">Kup teraz — 1299 zł</button></span>
-          <span class="magnet"><button class="btn secondary" id="learn">Demo efektów</button></span>
-          <span class="tag">Wysyłka 24h</span>
-          <span class="tag">Gwarancja 2 lata</span>
-        </div>
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <h1 class="headline reveal">Zapach, który opowiada Twoją historię.</h1>
+      <p class="sub reveal">Selecja niszowych perfum z całego świata, wyselekcjonowana jak kolekcja dzieł sztuki. Zanurz się w świecie akordów, które zostają w pamięci na długo po ostatniej nucie.</p>
+      <div class="hero-cta reveal">
+        <a href="#kolekcja" class="btn gold" data-nav>Przeglądaj kolekcję</a>
+        <a href="#o-nas" class="btn" data-nav>O marce</a>
       </div>
-      <div>
-        <div class="phone" id="phone">
-          <div class="notch"></div>
-          <div class="screen">
-            <div class="shine"></div>
-            <div class="ui">
-              <div class="tag">Aurora UI — tryb pokazowy</div>
-              <h3 style="margin:.2rem 0">Interakcje 3D</h3>
-              <p style="color:#cfd7ee; max-width:44ch">Dotyk, przechylenie i przewijanie sterują animacjami. Płynnie i responsywnie.</p>
-            </div>
-            <div class="floating" id="float1">
-              <strong>Live Widget</strong>
-              <p style="margin:.2rem 0 0">Powiadomienia i skróty w czasie rzeczywistym.</p>
-            </div>
+    </div>
+    <div class="hero-art reveal">
+      <!-- Dekoracyjna „butelka” – SVG, bez zewnętrznych plików -->
+      <svg class="bottle" viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="g1" x1="0" x2="1">
+            <stop offset="0%" stop-color="#e7d9c1"/>
+            <stop offset="100%" stop-color="#8d734c"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#2a2722"/>
+            <stop offset="100%" stop-color="#0f0e10"/>
+          </linearGradient>
+        </defs>
+        <rect x="60" y="60" width="200" height="70" rx="16" fill="url(#g2)" opacity=".95"/>
+        <rect x="85" y="124" width="150" height="230" rx="28" fill="url(#g1)" opacity=".85"/>
+        <rect x="90" y="130" width="140" height="220" rx="24" fill="#000" opacity=".35"/>
+        <rect x="100" y="365" width="120" height="40" rx="10" fill="#1b1a1f" opacity=".85"/>
+        <rect x="120" y="30" width="80" height="35" rx="8" fill="#1b1a1f" opacity=".9"/>
+        <circle cx="160" cy="42" r="6" fill="#7c6747"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="pill">Ambra</span><span class="pill">Oud</span><span class="pill">Irys</span><span class="pill">Tonka</span><span class="pill">Cedr</span><span class="pill">Bergamotka</span>
+    <span class="pill">Ambra</span><span class="pill">Oud</span><span class="pill">Irys</span><span class="pill">Tonka</span><span class="pill">Cedr</span><span class="pill">Bergamotka</span>
+  </div>
+</div>
+
+<!-- KOLEKCJA -->
+<section id="kolekcja">
+  <div class="wrap">
+    <h2 class="section-title reveal">Kolekcja Maison</h2>
+    <p class="section-sub reveal">Limitowane edycje tworzone w krótkich seriach. Każdy flakon numerowany i ręcznie wykańczany.</p>
+
+    <div class="grid">
+      <!-- Karta 1 -->
+      <article class="card reveal">
+        <div class="thumb"></div>
+        <div class="card-body">
+          <div class="note">Extrait de Parfum • 50 ml</div>
+          <div class="name">Nocturne d’Or</div>
+          <div class="price">890 zł</div>
+          <div class="card-actions">
+            <span class="chip">ambra</span><span class="chip">wanilia madag.</span><span class="chip">szałwia</span>
+            <button class="buy" data-product="Nocturne d’Or">Kup teraz</button>
           </div>
         </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- FEATURES -->
-  <section id="funkcje">
-    <div class="container">
-      <h2 style="text-align:center; margin-bottom:12px">Dlaczego <span class="grad">Aurora X</span>?</h2>
-      <p class="lead" style="text-align:center; margin-inline:auto; max-width:70ch">Zaprojektowane jak landing topowych marek. Natywny JS i CSS, zero ciężkich bibliotek. Poniżej tylko wycinek możliwości.</p>
-      <div class="grid3" style="margin-top:16px">
-        <article class="card"><div class="ico">✨</div><h3>Mikro‑interakcje</h3><p>Przyciski „magnetyczne”, sprężyste animacje, subtelne cienie i skale.</p></article>
-        <article class="card"><div class="ico">📱</div><h3>Mobile‑first</h3><p>Układ i target dotykowy dopieszczone pod iPhone — ale śmiga wszędzie.</p></article>
-        <article class="card"><div class="ico">⚡</div><h3>60 fps</h3><p>Transform + opacity, IntersectionObserver i Web Animations API.</p></article>
-      </div>
-
-      <div class="tabs">
-        <div class="tab-head">
-          <button class="active" data-tab="t1">Scroll reveal</button>
-          <button data-tab="t2">Parallax</button>
-          <button data-tab="t3">Modale & Karuzele</button>
-          <button data-tab="t4">Akordeon</button>
-        </div>
-        <div class="tab-body">
-          <div id="t1" class="active"><p class="lead">Elementy pojawiają się kaskadowo, gdy wchodzą w viewport — bez bibliotek.</p></div>
-          <div id="t2"><p class="lead">Warstwy tła poruszają się wolniej od treści — efekt głębi bez utraty wydajności.</p></div>
-          <div id="t3"><p class="lead">Wbudowany modal z galerią SVG i przyciskami sterującymi. Płynne przejścia.</p></div>
-          <div id="t4"><p class="lead">Native &lt;details&gt; z customowym stylem i miękką animacją wysokości.</p></div>
-        </div>
-      </div>
-
-      <div class="marquee">
-        <div class="marquee-track" id="mq">
-          <span class="bubble">„Wygląda jak Apple/Tesla landing”</span>
-          <span class="bubble">„Płynne jak masło, działa na starym iPhonie”</span>
-          <span class="bubble">„Zero frameworków, a tyle bajerów!”</span>
-          <span class="bubble">„Świetny template na kampanię”</span>
-          <span class="bubble">„UI jak natywna aplikacja”</span>
-
-          <span class="bubble">„Wygląda jak Apple/Tesla landing”</span>
-          <span class="bubble">„Płynne jak masło, działa na starym iPhonie”</span>
-          <span class="bubble">„Zero frameworków, a tyle bajerów!”</span>
-          <span class="bubble">„Świetny template na kampanię”</span>
-          <span class="bubble">„UI jak natywna aplikacja”</span>
-        </div>
-      </div>
-
-      <div class="accordion">
-        <details><summary>Jak wygląda integracja z PayPal?</summary><p>Pod „Kup teraz” wpinamy przycisk PayPal Checkout lub link do koszyka. Wystarczy Twój e‑mail PayPal — mogę od razu podstawić w kodzie.</p></details>
-        <details><summary>Czy można dodać wideo?</summary><p>Tak! W sekcji „Pokaz” przewidziałem sticky video lub auto‑play w trybie wyciszonym, z PIP.</p></details>
-        <details><summary>SEO i wydajność?</summary><p>Jeden plik, webfont jeden krój, brak frameworka — TTFB i CLS minimalne. Dodaj meta/OG i gotowe.</p></details>
-      </div>
-    </div>
-
-    <div class="cta-bar">
-      <div class="inner">
-        <span class="tag">Dziś darmowa dostawa</span>
-        <button class="btn" id="buy2">Dodaj do koszyka</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- SHOWCASE -->
-  <section id="pokaz">
-    <div class="container showcase">
-      <div class="panel" id="parallaxPanel">
-        <div class="layer" aria-hidden="true"></div>
-        <div style="position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:18px">
-          <h3 style="margin:.2rem 0">Efekty parallax i tilt</h3>
-          <p class="lead">Poruszaj kursorem / przechyl telefon — tło i karty reagują subtelnym ruchem.</p>
-        </div>
-        <div class="badge tag">Tryb Live</div>
-      </div>
-      <div class="panel" id="interactive">
-        <div class="layer" aria-hidden="true"></div>
-        <div style="position:absolute; inset:0; display:grid; place-items:center; padding:18px">
-          <div class="card show" style="max-width:440px; text-align:center; transform:none">
-            <h3>Panel interaktywny</h3>
-            <p>Dotknij, by otworzyć modal z galerią i dynamicznym opisem produktu.</p>
-            <div style="margin-top:10px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
-              <button class="btn" id="openModal">Otwórz galerię</button>
-              <button class="btn secondary" id="moreSpecs">Specyfikacja</button>
-            </div>
+      </article>
+      <!-- Karta 2 -->
+      <article class="card reveal">
+        <div class="thumb"></div>
+        <div class="card-body">
+          <div class="note">Parfum • 50 ml</div>
+          <div class="name">Bois d’Encre</div>
+          <div class="price">790 zł</div>
+          <div class="card-actions">
+            <span class="chip">cedr atlas</span><span class="chip">irys</span><span class="chip">kadzidło</span>
+            <button class="buy" data-product="Bois d’Encre">Kup teraz</button>
           </div>
         </div>
-      </div>
+      </article>
+      <!-- Karta 3 -->
+      <article class="card reveal">
+        <div class="thumb"></div>
+        <div class="card-body">
+          <div class="note">Extrait • 30 ml</div>
+          <div class="name">Velours de Nuit</div>
+          <div class="price">620 zł</div>
+          <div class="card-actions">
+            <span class="chip">kakao</span><span class="chip">fasola tonka</span><span class="chip">oud</span>
+            <button class="buy" data-product="Velours de Nuit">Kup teraz</button>
+          </div>
+        </div>
+      </article>
     </div>
-  </section>
 
-  <!-- CONFIGURATOR -->
-  <section id="konfigurator">
-    <div class="container">
-      <h2 style="text-align:center; margin-bottom:12px">Konfigurator wyglądu</h2>
-      <p class="lead" style="text-align:center; margin-inline:auto; max-width:70ch">Kliknij próbkę, by zmienić akcent kolorystyczny całej strony w locie.</p>
-      <div style="display:flex; justify-content:center">
-        <div class="swatches" id="swatches">
-          <div class="swatch active" data-colors="#65e1ff,#8a6bff,#ff6fa6" style="background:linear-gradient(135deg,#65e1ff,#ff6fa6)"></div>
-          <div class="swatch" data-colors="#7af59b,#4cc9f0,#4361ee" style="background:linear-gradient(135deg,#7af59b,#4361ee)"></div>
-          <div class="swatch" data-colors="#ffd166,#ef476f,#8338ec" style="background:linear-gradient(135deg,#ffd166,#8338ec)"></div>
-          <div class="swatch" data-colors="#ff9f1c,#2ec4b6,#e71d36" style="background:linear-gradient(135deg,#ff9f1c,#e71d36)"></div>
+    <!-- Akordeon nut zapachowych -->
+    <div class="accordion reveal" role="region" aria-label="Nuty zapachowe">
+      <details>
+        <summary>Jak dobieramy kompozycje?</summary>
+        <div class="acc-body">Pracujemy wyłącznie z naturalnymi absolutami i frakcjami. Najpierw budujemy serce kompozycji, następnie akord otwarcia i ogon (dry‑down) dla podpisu zapachu.</div>
+      </details>
+      <details>
+        <summary>Nuty głowy, serca i bazy</summary>
+        <div class="acc-body">Głowa: cytrusy, aldehydy. Serce: bukiet kwiatowy, przyprawy. Baza: bursztyn, drzewo, piżma, żywice – to one pozostają najdłużej.</div>
+      </details>
+      <details>
+        <summary>Skóra a trwałość</summary>
+        <div class="acc-body">pH skóry, nawilżenie i klimat wpływają na projekcję. Dla lepszej dyfuzji psiknij raz na tkaninę z dystansu ~20 cm.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- O NAS -->
+<section id="o-nas">
+  <div class="wrap">
+    <h2 class="section-title reveal">Rzemiosło i Haute Parfumerie</h2>
+    <p class="section-sub reveal">Powstajemy na styku sztuki i alchemii. Tworzymy zapachy, które budują wspomnienia.</p>
+
+    <div class="glass reveal">
+      <div>
+        <h3>Manifest</h3>
+        <ul class="list">
+          <li>Małe partie, ręczna maceracja, wielotygodniowe dojrzewanie.</li>
+          <li>Składniki klasy Grand Cru: irys, oud, ambra szara (substytuty etyczne).</li>
+          <li>Brak pośpiechu. Każda kropla ma uzasadnienie.</li>
+        </ul>
+        <div class="hero-cta" style="margin-top:16px">
+          <a class="btn gold" href="#kolekcja" data-nav>Zobacz edycje</a>
+          <a class="btn" href="#kontakt" data-nav>Umów konsultację zapachową</a>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section id="faq">
-    <div class="container">
-      <h2 style="text-align:center; margin-bottom:10px">FAQ</h2>
-      <div class="accordion" style="max-width:820px; margin-inline:auto">
-        <details><summary>Na jakich przeglądarkach działa?</summary><p>Nowoczesne przeglądarki mobilne i desktop (Safari, Chrome, Edge, Firefox). Animacje degradują się łagodnie.</p></details>
-        <details><summary>Czy można dodać jasny motyw?</summary><p>Tak, przełącznik może podmieniać zmienne CSS w :root (np. przez klasę .light).</p></details>
-        <details><summary>Gotowe do publikacji?</summary><p>Tak — skopiuj plik .html na hosting i gotowe. Możesz też użyć jako komponent w CMS.</p></details>
+      <div class="glass-visual">
+        <!-- Delikatna grafika liści/roślin – luksusowy akcent -->
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M100 20 C 70 60, 40 70, 25 120 C 50 110, 70 90, 100 80 C 130 70, 150 60, 175 40 C 150 90, 130 120, 100 160" fill="none" stroke="#c9a46b" stroke-width="2" opacity=".8"/>
+        </svg>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <footer>
-    <div class="container" style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap">
-      <div>© 2025 Aurora Labs</div>
-      <div style="display:flex; gap:8px">
-        <a href="#start" class="tag">Do góry</a>
-        <a class="tag" href="#" id="contact">Kontakt</a>
-      </div>
+<!-- OPINIE -->
+<section id="opinie">
+  <div class="wrap">
+    <h2 class="section-title reveal">Opinie</h2>
+    <p class="section-sub reveal">„Nuty, które pamięta się tygodniami. Atelier, do którego wracasz.”</p>
+    <div class="quotes">
+      <blockquote class="quote reveal">„Najpiękniejsza ambra, jaką nosiłam. Projekcja i ogon – bajka.” — Anna</blockquote>
+      <blockquote class="quote reveal">„Zapach, który zbiera komplementy nawet po całym dniu.” — Krzysztof</blockquote>
+      <blockquote class="quote reveal">„Butikowa obsługa i personalizacja – czuję się traktowana wyjątkowo.” — Marta</blockquote>
     </div>
-  </footer>
+  </div>
+</section>
 
-  <!-- MODAL -->
-  <dialog id="modal" style="border:none; border-radius:16px; padding:0; max-width:min(92vw,720px); background:#0e111a; color:#e9eef7">
-    <div style="padding:16px 16px 8px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,.1)">
-      <strong>Galeria Aurora</strong>
-      <button id="closeModal" class="btn secondary" style="padding:8px 12px">Zamknij</button>
+<!-- KONTAKT -->
+<section id="kontakt">
+  <div class="wrap">
+    <h2 class="section-title reveal">Kontakt i konsultacje</h2>
+    <p class="section-sub reveal">Napisz do nas – przygotujemy selekcję próbek pod Twoje preferencje.</p>
+    <div class="glass reveal">
+      <form id="contactForm" class="payrow" onsubmit="event.preventDefault(); thanks();">
+        <div class="field">
+          <label>Imię i nazwisko</label>
+          <input required placeholder="np. Jan Kowalski">
+        </div>
+        <div class="field">
+          <label>E‑mail</label>
+          <input type="email" required placeholder="np. jan@przyklad.pl">
+        </div>
+        <div class="field">
+          <label>Preferencje zapachowe</label>
+          <select>
+            <option>Drzewne</option>
+            <option>Bursztynowe</option>
+            <option>Orientalne</option>
+            <option>Kwiatowe</option>
+            <option>Cytrusowe</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Wiadomość</label>
+          <input placeholder="W czym możemy pomóc?">
+        </div>
+        <div class="pay" style="grid-column:1/-1">
+          <button class="btn gold" type="submit">Wyślij</button>
+          <span class="muted" style="color:var(--muted)">Odpowiadamy zwykle w 24h.</span>
+        </div>
+      </form>
     </div>
-    <div style="padding:14px; display:grid; gap:10px">
-      <div style="height:280px; border-radius:12px; border:1px solid rgba(255,255,255,.1); overflow:hidden; position:relative">
-        <div id="carousel" style="position:absolute; inset:0; display:flex; transition:transform .5s ease">
-          <!-- Slides (SVG) -->
-          <svg viewBox="0 0 800 450" width="800" height="450" preserveAspectRatio="xMidYMid slice">
-            <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#65e1ff"/><stop offset="1" stop-color="#8a6bff"/></linearGradient></defs>
-            <rect width="800" height="450" fill="#0b0e16"/>
-            <circle cx="420" cy="180" r="160" fill="url(#g1)" opacity=".35"/>
-            <text x="50" y="380" fill="#e9eef7" font-size="44" font-family="Inter" font-weight="800">Aurora — Design</text>
-          </svg>
-          <svg viewBox="0 0 800 450" width="800" height="450" preserveAspectRatio="xMidYMid slice">
-            <defs><linearGradient id="g2" x1="0" x2="1"><stop offset="0" stop-color="#8a6bff"/><stop offset="1" stop-color="#ff6fa6"/></linearGradient></defs>
-            <rect width="800" height="450" fill="#0b0e16"/>
-            <rect x="120" y="90" width="560" height="270" rx="26" fill="url(#g2)" opacity=".45"/>
-            <text x="50" y="380" fill="#e9eef7" font-size="44" font-family="Inter" font-weight="800">Superpłynne UI</text>
-          </svg>
-          <svg viewBox="0 0 800 450" width="800" height="450" preserveAspectRatio="xMidYMid slice">
-            <rect width="800" height="450" fill="#0b0e16"/>
-            <g transform="translate(60 80)">
-              <rect width="200" height="280" rx="18" fill="#121521"/>
-              <rect x="230" width="200" height="280" rx="18" fill="#121521"/>
-              <rect x="460" width="200" height="280" rx="18" fill="#121521"/>
-            </g>
-            <text x="50" y="380" fill="#e9eef7" font-size="44" font-family="Inter" font-weight="800">Modułowość</text>
-          </svg>
+  </div>
+</section>
+
+<!-- STOPKA -->
+<footer>
+  <div class="foot">
+    <div>
+      <div class="brand">L’Atelier Parfum</div>
+      <small>© 2025 L’Atelier Parfum. Wszelkie prawa zastrzeżone.</small>
+    </div>
+    <div>
+      <small>Regulamin</small><br/>
+      <a href="#">Polityka prywatności</a><br/>
+      <a href="#">Dostawa i zwroty</a>
+    </div>
+    <div>
+      <small>Kontakt</small><br/>
+      <a href="#kontakt" data-nav>Formularz</a><br/>
+      <a href="mailto:atelier@example.com">atelier@example.com</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL KUP TERAZ -->
+<div class="modal" id="modal">
+  <div class="sheet">
+    <header>
+      <strong>Finalizacja zakupu</strong>
+      <button class="close" id="closeModal">Zamknij</button>
+    </header>
+    <div class="content">
+      <p id="productName">Produkt</p>
+      <div class="payrow">
+        <div class="field">
+          <label>Imię i nazwisko</label>
+          <input placeholder="np. Jan Nowak">
+        </div>
+        <div class="field">
+          <label>E‑mail</label>
+          <input type="email" placeholder="np. jan@nowak.pl">
+        </div>
+        <div class="field">
+          <label>Adres</label>
+          <input placeholder="Ulica 1, 00-000 Miasto">
+        </div>
+        <div class="field">
+          <label>Metoda wysyłki</label>
+          <select>
+            <option>Kurier (gratis powyżej 500 zł)</option>
+            <option>Paczkomat</option>
+          </select>
         </div>
       </div>
-      <div style="display:flex; gap:10px; justify-content:center">
-        <button class="btn secondary" id="prev">←</button>
-        <button class="btn" id="next">→</button>
+      <div class="pay">
+        <!-- Przycisk pozorujący płatność (bez integracji) -->
+        <button class="btn">Zapłać (demo)</button>
+        <small>To demonstracja UI – zintegrować można np. z PayPal/Przelewy24.</small>
       </div>
     </div>
-    <div style="padding:12px 16px 18px; border-top:1px solid rgba(255,255,255,.1); color:#cfd7ee">
-      <strong>Opis:</strong> Ten modal, karuzela SVG i mikro‑animacje są w 100% natywne.
-    </div>
-  </dialog>
+  </div>
+</div>
 
 <script>
-// ---- PRELOADER ----
-window.addEventListener('load', ()=>{
-  setTimeout(()=> document.getElementById('preloader').style.display='none', 500);
-});
+/* ===== Atomizer Spray (canvas) – wczytywanie i przejścia ===== */
+(function(){
+  const canvas = document.getElementById('atomizer');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles = [], running = true, raf;
 
-// ---- CANVAS STARS / PARTICLES ----
-const canvas = document.getElementById('stars');
-const ctx = canvas.getContext('2d');
-let W,H,stars=[];
-function resize(){
-  W = canvas.width = window.innerWidth; H = canvas.height = Math.max(window.innerHeight, 600);
-  stars = Array.from({length: Math.round(W*H/9000)}, ()=>({x:Math.random()*W,y:Math.random()*H,z:Math.random()*0.6+0.4,r:Math.random()*1.8+0.2}));
-}
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  for(const s of stars){
-    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(255,255,255,${0.25 + s.z*0.6})`; ctx.fill();
-    s.x += (mouseX - W/2) * 0.00003 * s.z; s.y += (mouseY - H/2) * 0.00003 * s.z;
+  function resize(){
+    w = canvas.width = window.innerWidth * devicePixelRatio;
+    h = canvas.height = window.innerHeight * devicePixelRatio;
   }
-  requestAnimationFrame(draw);
-}
-let mouseX=0, mouseY=0;
-window.addEventListener('pointermove', e=>{ mouseX=e.clientX; mouseY=e.clientY; });
-window.addEventListener('resize', resize); resize(); draw();
+  window.addEventListener('resize', resize); resize();
 
-// ---- NAV ACTIVE ON SCROLL ----
-const navLinks = document.querySelectorAll('.nav a');
-const sections = [...document.querySelectorAll('header, section')];
-const navIO = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      navLinks.forEach(a=> a.classList.toggle('active', a.getAttribute('href') === '#'+e.target.id));
+  function spawnSpray(burst=160){
+    const originX = w * 0.55, originY = h * 0.32; // „główka atomizera” mniej więcej na butelce
+    for(let i=0;i<burst;i++){
+      const angle = (-Math.PI/6) + (Math.random()*Math.PI/5); // wachlarz
+      const speed = 6 + Math.random()*6;
+      particles.push({
+        x: originX,
+        y: originY,
+        vx: Math.cos(angle)*speed,
+        vy: Math.sin(angle)*speed - Math.random()*1.5,
+        life: 60 + Math.random()*40,
+        size: 1 + Math.random()*2,
+        hue: 40 + Math.random()*12,
+        alpha: .9
+      });
+    }
+  }
+
+  function tick(){
+    ctx.clearRect(0,0,w,h);
+    for(let i=particles.length-1;i>=0;i--){
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.08; // grawitacja
+      p.life -= 1; p.alpha = Math.max(0, p.life/100);
+      // cząsteczka
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${p.hue}, 32%, 72%, ${p.alpha})`;
+      ctx.arc(p.x, p.y, p.size*devicePixelRatio, 0, Math.PI*2);
+      ctx.fill();
+      // delikatna mgiełka
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${p.hue}, 28%, 64%, ${p.alpha*.25})`;
+      ctx.arc(p.x+2, p.y+1, p.size*1.8*devicePixelRatio, 0, Math.PI*2);
+      ctx.fill();
+
+      if(p.life<=0 || p.y>h+40) particles.splice(i,1);
+    }
+    if(running) raf = requestAnimationFrame(tick);
+  }
+
+  // start
+  spawnSpray(220);
+  tick();
+
+  // zakończenie preloadera
+  window.addEventListener('load', () => {
+    const pre = document.getElementById('preloader');
+    setTimeout(()=>{
+      pre.classList.add('fade-out');
+      // po schowaniu przestań animować, ale zostaw funkcję do „przejść”
+      setTimeout(()=>{ running=false; cancelAnimationFrame(raf); }, 800);
+    }, 800);
+  });
+
+  // Eksport funkcji przejścia (kliknięcia w menu)
+  window.sprayTransition = function(){
+    running = true; // uruchom na chwilę
+    spawnSpray(180);
+    tick();
+    setTimeout(()=>{ running=false; cancelAnimationFrame(raf); }, 700);
+  }
+})();
+
+/* ===== Smooth anchor + spray on nav ===== */
+document.querySelectorAll('[data-nav]').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    const href = a.getAttribute('href') || '';
+    if(href.startsWith('#')){
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if(target){
+        window.sprayTransition();
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+      }
     }
   });
-},{threshold:.5});
-sections.forEach(s=> navIO.observe(s));
-
-// ---- SCROLL REVEAL ----
-const reveal = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('show'); reveal.unobserve(e.target);} });
-},{threshold:.25});
-document.querySelectorAll('.card').forEach(el=>reveal.observe(el));
-const float = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{ if(e.isIntersecting){ e.target.style.opacity=1; e.target.style.transform='translateY(0)'; float.unobserve(e.target);} });
-},{threshold:.3});
-float.observe(document.getElementById('float1'));
-
-// ---- MAGNETIC BUTTONS ----
-document.querySelectorAll('.magnet').forEach(mag=>{
-  const btn = mag.querySelector('.btn');
-  mag.addEventListener('pointermove', e=>{
-    const r = mag.getBoundingClientRect(); const x = e.clientX - (r.left + r.width/2); const y = e.clientY - (r.top + r.height/2);
-    btn.style.setProperty('--tx', (x*0.15)+'px'); btn.style.setProperty('--ty', (y*0.15)+'px');
-  });
-  mag.addEventListener('pointerleave', ()=>{ btn.style.setProperty('--tx','0px'); btn.style.setProperty('--ty','0px'); });
 });
 
-// ---- PHONE PARALLAX ON SCROLL ----
-const phone = document.getElementById('phone');
-document.addEventListener('scroll', ()=>{
-  const r = phone.getBoundingClientRect();
-  const ratio = Math.min(Math.max((window.innerHeight - r.top)/window.innerHeight,0),1);
-  phone.style.transform = `rotate(${(-7 + ratio*5)}deg) translateY(${12 - ratio*12}px)`;
-});
-
-// ---- PARALLAX PANEL + TILT ----
-const pp = document.getElementById('parallaxPanel');
-pp.addEventListener('pointermove', e=>{
-  const r = pp.getBoundingClientRect(); const cx = (e.clientX - (r.left + r.width/2))/(r.width/2);
-  pp.style.transform = `perspective(900px) rotateY(${cx*4}deg)`;
-});
-pp.addEventListener('pointerleave', ()=> pp.style.transform = 'none');
-window.addEventListener('deviceorientation', (e)=>{
-  const x = (e.gamma||0)/45;
-  pp.style.transform = `perspective(900px) rotateY(${x*4}deg)`;
-});
-
-// ---- TABS ----
-const heads = document.querySelectorAll('.tab-head button');
-const bodies = document.querySelectorAll('.tab-body>div');
-heads.forEach(b=> b.addEventListener('click', ()=>{
-  heads.forEach(x=>x.classList.remove('active')); b.classList.add('active');
-  bodies.forEach(v=>v.classList.remove('active')); document.getElementById(b.dataset.tab).classList.add('active');
-}));
-
-// ---- MODAL & CAROUSEL ----
+/* ===== Modal „Kup teraz” (demo) ===== */
 const modal = document.getElementById('modal');
-document.getElementById('openModal').onclick = ()=> modal.showModal();
-document.getElementById('closeModal').onclick = ()=> modal.close();
-let slide = 0;
-function updateCarousel(){ document.getElementById('carousel').style.transform = `translateX(${-slide*100}%)`; }
-document.getElementById('prev').onclick = ()=>{ slide = (slide+2)%3; updateCarousel(); }
-document.getElementById('next').onclick = ()=>{ slide = (slide+1)%3; updateCarousel(); }
-document.getElementById('moreSpecs').onclick = ()=> alert('Specyfikacja (demo): OLED 120Hz, 5000 mAh, IP68');
-
-// ---- CONFIGURATOR (theme swap) ----
-const root = document.documentElement;
-document.getElementById('swatches').addEventListener('click', (e)=>{
-  const s = e.target.closest('.swatch'); if(!s) return;
-  document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active')); s.classList.add('active');
-  const [c1,c2,c3] = s.dataset.colors.split(',');
-  root.style.setProperty('--acc1', c1); root.style.setProperty('--acc2', c2); root.style.setProperty('--acc3', c3);
-  root.style.setProperty('--radial', `radial-gradient(900px 600px at 20% -10%, ${c1}33, transparent 60%), radial-gradient(900px 600px at 120% 10%, ${c2}33, transparent 60%), radial-gradient(900px 600px at 80% 120%, ${c3}24, transparent 60%)`);
+const closeModal = document.getElementById('closeModal');
+document.querySelectorAll('.buy').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('productName').textContent = 'Produkt: ' + btn.dataset.product;
+    modal.classList.add('show');
+  });
 });
+closeModal.addEventListener('click', ()=> modal.classList.remove('show'));
+modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('show'); });
 
-// ---- BUTTONS ACTIONS ----
-function scrollToId(id){ document.querySelector(id).scrollIntoView({behavior:'smooth'}); }
-document.getElementById('learn').onclick = ()=> scrollToId('#pokaz');
-document.getElementById('buy').onclick  = ()=> alert('Tu podpinamy PayPal / checkout 😎');
-document.getElementById('buy2').onclick = ()=> alert('Dodano do koszyka (demo)');
+/* ===== Reveal on scroll ===== */
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){ en.target.classList.add('visible'); io.unobserve(en.target); }
+  });
+}, {threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
 
-// ---- CONTACT ----
-document.getElementById('contact').onclick = (e)=>{
-  e.preventDefault();
-  const email = prompt('Podaj e‑mail do kontaktu (demo):','hello@example.com');
-  if(email) alert('Dzięki! Napiszemy na: ' + email);
-};
+/* ===== Formularz – eleganckie „dziękujemy” ===== */
+function thanks(){
+  const sheet = document.createElement('div');
+  sheet.className = 'modal show';
+  sheet.innerHTML = `
+    <div class="sheet">
+      <header><strong>Dziękujemy!</strong><button class="close" id="thanksClose">Zamknij</button></header>
+      <div class="content">
+        <p>Twoja wiadomość została wysłana. Wrócimy z odpowiedzią tak szybko, jak to możliwe.</p>
+      </div>
+    </div>`;
+  document.body.appendChild(sheet);
+  sheet.addEventListener('click', (e)=>{ if(e.target===sheet){ sheet.remove(); } });
+  sheet.querySelector('#thanksClose').addEventListener('click', ()=> sheet.remove());
+}
 </script>
 </body>
 </html>
