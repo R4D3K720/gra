@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Tap Runner</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #0e0f13;
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .wrap {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+    canvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background: linear-gradient(180deg, #1a1d29 0%, #0e0f13 100%);
+    }
+    .ui {
+      position: fixed;
+      top: env(safe-area-inset-top, 12px);
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      pointer-events: none;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .pill {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px;
+      padding: 8px 14px;
+      pointer-events: auto;
+    }
+    .btn {
+      cursor: pointer;
+      transition: transform .06s ease;
+    }
+    .btn:active { transform: scale(.96); }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(1200px 800px at 50% 20%, rgba(255,255,255,0.06), transparent 60%);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      text-align: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 520px;
+      width: min(92vw, 520px);
+      background: rgba(20,22,30,0.85);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    h1 {
+      margin: 8px 0 4px;
+      font-size: clamp(24px, 5vw, 36px);
+    }
+    p { margin: 6px 0 0; opacity: .9; }
+    .big {
+      display: inline-block;
+      margin-top: 14px;
+      background: linear-gradient(90deg, #67e8f9, #a78bfa, #f472b6);
+      border: none;
+      color: #0f1116;
+      font-weight: 800;
+      padding: 14px 20px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      cursor: pointer;
+      width: 100%;
+      font-size: clamp(16px, 4.5vw, 18px);
+    }
+    .ghost {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+    }
+    .tips {
+      margin-top: 10px;
+      font-size: 14px;
+      opacity: .9;
+    }
+    .badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 3px 8px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <canvas id="game" aria-label="Gra Tap Runner"></canvas>
+  </div>
+
+  <div class="ui">
+    <div class="pill" id="score">Punkty: 0</div>
+    <div class="pill">Rekord: <span id="best">0</span></div>
+    <div class="pill btn" id="pauseBtn" role="button" aria-label="Pauza">⏸️ Pauza</div>
+  </div>
+
+  <div class="overlay" id="startOverlay">
+    <div class="card">
+      <h1>🏃‍♂️ Tap Runner <span class="badge">Mobile</span></h1>
+      <p>Dotknij ekranu, żeby <b>skakać</b>. Unikaj przeszkód, zbijaj bonusy 💎.</p>
+      <button class="big" id="playBtn">▶️ Zagraj</button>
+      <button class="big ghost" id="installBtn" hidden>➕ Dodaj na ekran główny</button>
+      <div class="tips">
+        Tipy: dłuższe przytrzymanie = <b>wyższy skok</b> • im dłużej żyjesz, tym szybciej gra przyspiesza.
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="gameOver">
+    <div class="card">
+      <h1>💥 Koniec gry!</h1>
+      <p>Wynik: <b id="finalScore">0</b> • Rekord: <b id="finalBest">0</b></p>
+      <button class="big" id="againBtn">🔁 Zagraj ponownie</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  let W = 0, H = 0, DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  // UI elements
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const startOverlay = document.getElementById('startOverlay');
+  const playBtn = document.getElementById('playBtn');
+  const gameOver = document.getElementById('gameOver');
+  const finalScore = document.getElementById('finalScore');
+  const finalBest = document.getElementById('finalBest');
+  const againBtn = document.getElementById('againBtn');
+  const installBtn = document.getElementById('installBtn');
+
+  // PWA install prompt (optional)
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.hidden = false;
+  });
+  installBtn?.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.hidden = true;
+  });
+
+  function resize() {
+    W = Math.floor(window.innerWidth * DPR);
+    H = Math.floor(window.innerHeight * DPR);
+    canvas.width = W;
+    canvas.height = H;
+  }
+  window.addEventListener('resize', resize, { passive: true });
+  resize();
+
+  // Game state
+  const state = {
+    running: false,
+    paused: false,
+    t: 0,
+    score: 0,
+    best: Number(localStorage.getItem('taprunner_best') || 0),
+    speed: 360, // px/s at start
+    gravity: 1600,
+    jumpImpulse: 550,
+    maxJumpHold: 160, // ms for variable jump
+  };
+  bestEl.textContent = state.best;
+
+  // Entities
+  const player = {
+    x: 0, y: 0, w: 42, h: 42,
+    vy: 0,
+    color1: '#67e8f9',
+    color2: '#a78bfa',
+    grounded: false,
+    spin: 0,
+  };
+
+  const floor = {
+    y: 0,
+    h: 18,
+    wave: 0,
+  };
+
+  const obstacles = [];
+  const pickups = [];
+  let spawnTimer = 0;
+  let pickupTimer = 0;
+
+  // Input
+  let pressing = false;
+  let pressStartTime = 0;
+
+  function worldToPx(x) { return Math.round(x); }
+
+  function startGame() {
+    state.running = true;
+    state.paused = false;
+    state.t = 0;
+    state.score = 0;
+    state.speed = 360;
+    player.w = player.h = Math.max(32, Math.min(W, H) * 0.045);
+    player.x = W * 0.22;
+    floor.h = Math.max(12 * DPR, Math.min(W, H) * 0.015);
+    floor.y = H - floor.h;
+    player.y = floor.y - player.h;
+    player.vy = 0;
+    player.grounded = true;
+    player.spin = 0;
+    obstacles.length = 0;
+    pickups.length = 0;
+    spawnTimer = 0;
+    pickupTimer = 1000;
+    startOverlay.classList.add('hidden');
+    gameOver.classList.add('hidden');
+    loop(0);
+  }
+
+  function endGame() {
+    state.running = false;
+    gameOver.classList.remove('hidden');
+    finalScore.textContent = Math.floor(state.score);
+    if (state.score > state.best) {
+      state.best = Math.floor(state.score);
+      localStorage.setItem('taprunner_best', state.best);
+    }
+    finalBest.textContent = state.best;
+  }
+
+  function togglePause() {
+    if (!state.running) return;
+    state.paused = !state.paused;
+    pauseBtn.textContent = state.paused ? '▶️ Wznów' : '⏸️ Pauza';
+    if (!state.paused) {
+      lastTs = performance.now();
+      loop(0);
+    }
+  }
+
+  pauseBtn.addEventListener('click', togglePause);
+
+  // Controls
+  function onPress(e) {
+    if (!state.running) return;
+    pressing = true;
+    pressStartTime = performance.now();
+    if (player.grounded) {
+      player.vy = -state.jumpImpulse;
+      player.grounded = false;
+    }
+  }
+  function onRelease(e) {
+    pressing = false;
+  }
+  window.addEventListener('pointerdown', onPress);
+  window.addEventListener('pointerup', onRelease);
+  window.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') onPress();
+    else if (e.code === 'KeyP') togglePause();
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp') onRelease();
+  });
+
+  playBtn.addEventListener('click', startGame);
+  againBtn.addEventListener('click', startGame);
+
+  // Helpers
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  // Game Loop
+  let lastTs = 0;
+  function loop(ts) {
+    if (!state.running || state.paused) return;
+    if (!lastTs) lastTs = ts;
+    let dt = Math.min(0.032, (ts - lastTs) / 1000);
+    lastTs = ts;
+
+    update(dt);
+    draw();
+
+    requestAnimationFrame(loop);
+  }
+
+  function update(dt) {
+    state.t += dt;
+    // Difficulty curve
+    state.speed += dt * 12; // gradual speed up
+    state.score += dt * (state.speed / 10);
+    scoreEl.textContent = 'Punkty: ' + Math.floor(state.score);
+
+    // Variable jump height: allow brief continued thrust while holding
+    if (!player.grounded && pressing) {
+      const held = Math.min(state.maxJumpHold, performance.now() - pressStartTime);
+      if (held < state.maxJumpHold) {
+        player.vy -= 900 * dt;
+      }
+    }
+    // Gravity
+    player.vy += state.gravity * dt;
+    player.y += player.vy * dt;
+
+    // Floor collision
+    if (player.y + player.h >= floor.y) {
+      player.y = floor.y - player.h;
+      player.vy = 0;
+      player.grounded = true;
+    } else {
+      player.grounded = false;
+    }
+
+    // Spawn obstacles
+    spawnTimer -= dt * 1000;
+    if (spawnTimer <= 0) {
+      const gapMin = 700 - Math.min(420, state.t * 20);
+      const gapMax = 1100 - Math.min(550, state.t * 30);
+      spawnTimer = rand(gapMin, gapMax);
+      const w = rand(player.w * 0.9, player.w * 1.5);
+      const h = rand(player.h * 0.9, player.h * 1.6);
+      obstacles.push({
+        x: W + w,
+        y: floor.y - h,
+        w, h,
+        vx: -state.speed,
+        color: '#f472b6'
+      });
+      // Occasionally a double obstacle
+      if (Math.random() < Math.min(0.25, state.t / 40)) {
+        const w2 = rand(player.w * 0.8, player.w * 1.3);
+        const h2 = rand(player.h * 0.8, player.h * 1.4);
+        obstacles.push({
+          x: W + w + rand(80, 140),
+          y: floor.y - h2,
+          w: w2, h: h2,
+          vx: -state.speed,
+          color: '#a78bfa'
+        });
+      }
+    }
+
+    // Spawn pickups
+    pickupTimer -= dt * 1000;
+    if (pickupTimer <= 0) {
+      pickupTimer = rand(1500, 2600);
+      const size = player.w * 0.6;
+      pickups.push({
+        x: W + size,
+        y: floor.y - player.h - rand(40, 140) * DPR,
+        w: size, h: size,
+        vx: -state.speed * 1.02,
+        t: 0,
+      });
+    }
+
+    // Move & cull entities
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const o = obstacles[i];
+      o.x += o.vx * dt;
+      if (o.x + o.w < -32) obstacles.splice(i, 1);
+    }
+    for (let i = pickups.length - 1; i >= 0; i--) {
+      const p = pickups[i];
+      p.x += p.vx * dt;
+      p.t += dt;
+      if (p.x + p.w < -32) pickups.splice(i, 1);
+    }
+
+    // Collisions
+    for (const o of obstacles) {
+      if (rectsOverlap(player, o)) {
+        endGame();
+        return;
+      }
+    }
+    for (let i = pickups.length - 1; i >= 0; i--) {
+      const p = pickups[i];
+      if (rectsOverlap(player, p)) {
+        state.score += 25;
+        pickups.splice(i, 1);
+        // brief spin effect
+        player.spin = Math.PI * 2;
+      }
+    }
+    // Spin decay
+    if (player.spin > 0) {
+      player.spin = Math.max(0, player.spin - dt * 8);
+    }
+  }
+
+  function rectsOverlap(a, b) {
+    return a.x < b.x + b.w &&
+           a.x + a.w > b.x &&
+           a.y < b.y + b.h &&
+           a.y + a.h > b.y;
+  }
+
+  function drawBackground() {
+    // parallax stars
+    const t = state.t;
+    const rows = 3;
+    for (let r = 1; r <= rows; r++) {
+      const speed = state.speed * (0.1 * r);
+      const y = H * (0.18 * r);
+      const count = 10 * r;
+      for (let i = 0; i < count; i++) {
+        const x = ((i * 240 + (t * -speed) * 0.5) % (W + 240)) - 120;
+        const size = 2 * DPR * r * 0.6;
+        ctx.globalAlpha = 0.25 + 0.1 * r;
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(x, y + Math.sin((i + t) * 0.8) * 4 * r, size, size);
+        ctx.globalAlpha = 1;
+      }
+    }
+    // floor
+    ctx.fillStyle = '#121420';
+    ctx.fillRect(0, floor.y, W, floor.h);
+  }
+
+  function drawPlayer() {
+    const { x, y, w, h } = player;
+    ctx.save();
+    ctx.translate(x + w/2, y + h/2);
+    if (player.spin) ctx.rotate((player.spin) * 0.5);
+    // body gradient
+    const grad = ctx.createLinearGradient(-w/2, -h/2, w/2, h/2);
+    grad.addColorStop(0, player.color1);
+    grad.addColorStop(1, player.color2);
+    ctx.fillStyle = grad;
+    roundRect(ctx, -w/2, -h/2, w, h, 10 * DPR);
+    ctx.fill();
+    // face
+    ctx.fillStyle = '#0f1116';
+    const eye = Math.max(2*DPR, w*0.08);
+    ctx.beginPath();
+    ctx.arc(-w*0.18, -h*0.06, eye, 0, Math.PI*2);
+    ctx.arc(w*0.18, -h*0.06, eye, 0, Math.PI*2);
+    ctx.fill();
+    // shadow
+    const shadowW = w * 0.9;
+    const sx = x + w/2 - shadowW/2;
+    const sy = floor.y + 4 * DPR;
+    const sh = 6 * DPR;
+    ctx.restore();
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#000';
+    roundRect(ctx, sx, sy, shadowW, sh, sh/2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawObstacles() {
+    for (const o of obstacles) {
+      ctx.fillStyle = o.color;
+      roundRect(ctx, o.x, o.y, o.w, o.h, 8 * DPR);
+      ctx.fill();
+    }
+  }
+
+  function drawPickups() {
+    for (const p of pickups) {
+      const pul = 1 + Math.sin(p.t * 6) * 0.12;
+      ctx.save();
+      ctx.translate(p.x + p.w/2, p.y + p.h/2);
+      ctx.scale(pul, pul);
+      ctx.strokeStyle = '#67e8f9';
+      ctx.lineWidth = 3 * DPR;
+      diamond(ctx, -p.w/2, -p.h/2, p.w, p.h);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawBackground();
+    drawObstacles();
+    drawPickups();
+    drawPlayer();
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    const rr = Math.min(r, w/2, h/2);
+    c.beginPath();
+    c.moveTo(x + rr, y);
+    c.arcTo(x + w, y, x + w, y + h, rr);
+    c.arcTo(x + w, y + h, x, y + h, rr);
+    c.arcTo(x, y + h, x, y, rr);
+    c.arcTo(x, y, x + w, y, rr);
+    c.closePath();
+  }
+
+  function diamond(c, x, y, w, h) {
+    c.beginPath();
+    c.moveTo(x + w/2, y);
+    c.lineTo(x + w, y + h/2);
+    c.lineTo(x + w/2, y + h);
+    c.lineTo(x, y + h/2);
+    c.closePath();
+  }
+
+  // Prevent iOS double-tap zoom
+  let lastTouch = 0;
+  window.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouch <= 300) e.preventDefault();
+    lastTouch = now;
+  }, { passive: false });
+
+  // Focus start
+  canvas.addEventListener('click', () => { if (!state.running) startGame(); });
+
+  // Show start overlay initially
+  startOverlay.classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
